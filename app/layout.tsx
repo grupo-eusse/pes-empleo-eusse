@@ -3,7 +3,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 import Navbar from "@/ui/components/navbar";
 import Footer from '@/ui/components/footer';
-import {montserrat} from '@/ui/components/fonts';
+import {montserrat} from '@/ui/fonts';
 
 
 
