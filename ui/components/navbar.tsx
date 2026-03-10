@@ -37,10 +37,10 @@ export default function Navbar() {
 
   useEffect(() => {
     let mounted = true;
+    const supabase = createClient();
 
     async function loadAuthData() {
       try {
-        const supabase = createClient();
         const { data: { user: authUser } } = await supabase.auth.getUser();
 
         if (!mounted) return;
@@ -61,7 +61,26 @@ export default function Navbar() {
     }
 
     loadAuthData();
-    return () => { mounted = false; };
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (!mounted) return;
+      if (session?.user) {
+        setUser({ id: session.user.id, email: session.user.email ?? '' });
+        supabase
+          .from('user_profile')
+          .select('user_role')
+          .eq('supabase_id', session.user.id)
+          .single()
+          .then(({ data: profile }) => {
+            if (mounted) setUserRole((profile?.user_role as UserRole) ?? null);
+          });
+      } else {
+        setUser(null);
+        setUserRole(null);
+      }
+    });
+
+    return () => { mounted = false; subscription.unsubscribe(); };
   }, []);
 
   const isActive = (href: string) =>
