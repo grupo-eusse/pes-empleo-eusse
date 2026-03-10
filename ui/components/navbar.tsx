@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { useEffect, useState, useTransition } from 'react';
+import { useEffect, useCallback, useState, useTransition } from 'react';
 import BurgerBtn from './burguer_btn';
 import { logout } from '@/lib/actions/auth';
 import { createClient } from '@/lib/supabase/client';
@@ -35,53 +35,34 @@ export default function Navbar() {
   const [user, setUser] = useState<NavbarUser | null>(null);
   const [userRole, setUserRole] = useState<UserRole | null>(null);
 
-  useEffect(() => {
-    let mounted = true;
+  const syncSession = useCallback(async () => {
     const supabase = createClient();
-
-    async function loadAuthData() {
-      try {
-        const { data: { user: authUser } } = await supabase.auth.getUser();
-
-        if (!mounted) return;
-        if (!authUser) { setUser(null); setUserRole(null); return; }
-
-        setUser({ id: authUser.id, email: authUser.email ?? '' });
-
-        const { data: profile } = await supabase
-          .from('user_profile')
-          .select('user_role')
-          .eq('supabase_id', authUser.id)
-          .single();
-
-        if (mounted) setUserRole((profile?.user_role as UserRole) ?? null);
-      } catch {
-        if (mounted) { setUser(null); setUserRole(null); }
-      }
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session?.user) {
+      setUser(null);
+      setUserRole(null);
+      return;
     }
-
-    loadAuthData();
-
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      if (!mounted) return;
-      if (session?.user) {
-        setUser({ id: session.user.id, email: session.user.email ?? '' });
-        supabase
-          .from('user_profile')
-          .select('user_role')
-          .eq('supabase_id', session.user.id)
-          .single()
-          .then(({ data: profile }) => {
-            if (mounted) setUserRole((profile?.user_role as UserRole) ?? null);
-          });
-      } else {
-        setUser(null);
-        setUserRole(null);
-      }
-    });
-
-    return () => { mounted = false; subscription.unsubscribe(); };
+    setUser({ id: session.user.id, email: session.user.email ?? '' });
+    const { data: profile } = await supabase
+      .from('user_profile')
+      .select('user_role')
+      .eq('supabase_id', session.user.id)
+      .single();
+    setUserRole((profile?.user_role as UserRole) ?? null);
   }, []);
+
+  // Re-sync auth whenever the route changes (covers server-action redirects)
+  useEffect(() => { syncSession(); }, [pathname, syncSession]);
+
+  // Also listen for real-time auth events (login/logout from other tabs, token refresh)
+  useEffect(() => {
+    const supabase = createClient();
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(() => {
+      syncSession();
+    });
+    return () => { subscription.unsubscribe(); };
+  }, [syncSession]);
 
   const isActive = (href: string) =>
     href === '/' ? pathname === '/' : pathname.startsWith(href);
