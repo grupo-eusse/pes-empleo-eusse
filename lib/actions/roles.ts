@@ -168,7 +168,7 @@ export async function createInvite(formData: FormData): Promise<ActionResult> {
 
     // Send invite email via Mailgun
     if (inserted?.token) {
-      const html = buildInviteEmailHtml(email, role, inserted.token);
+      const html = await buildInviteEmailHtml(email, role, inserted.token);
       const mailResult = await sendEmail({
         to: email,
         subject: 'Invitación al Portal de Empleo Eusse',
@@ -288,7 +288,7 @@ export async function resendInvite(inviteId: string): Promise<ActionResult> {
 
     // Send invite email via Mailgun
     if (newInvite?.token) {
-      const html = buildInviteEmailHtml(originalInvite.email, originalInvite.role, newInvite.token);
+      const html = await buildInviteEmailHtml(originalInvite.email, originalInvite.role, newInvite.token);
       const mailResult = await sendEmail({
         to: originalInvite.email,
         subject: 'Invitación al Portal de Empleo Eusse',

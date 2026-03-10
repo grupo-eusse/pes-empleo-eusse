@@ -45,7 +45,7 @@ export async function sendEmail({ to, subject, html }: SendEmailOptions): Promis
   }
 }
 
-export function buildInviteEmailHtml(email: string, role: string, token: string): string {
+export async function buildInviteEmailHtml(email: string, role: string, token: string): Promise<string> {
   const inviteUrl = `${SITE_URL}/registro?invite=${encodeURIComponent(token)}`;
   const roleName = role === 'admin' ? 'Administrador' : 'Recursos Humanos';
 

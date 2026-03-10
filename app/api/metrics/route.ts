@@ -41,7 +41,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 
-  const applications = (apps || []) as Array<{
+  const applications = (apps || []) as unknown as Array<{
     id: number;
     status: ApplicationStatus;
     created_at: string;
