@@ -17,6 +17,7 @@ export default function Home() {
             fill
             sizes="100vw"
             className="object-cover"
+            fetchPriority="high"
             priority
           />
           <div className="absolute inset-0 bg-linear-to-b from-brand-900/70 via-brand-800/60 to-brand-600/50" />
