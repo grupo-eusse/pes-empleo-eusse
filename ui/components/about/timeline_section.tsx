@@ -6,15 +6,15 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 
 const PHOTOS = [
-  "/nuestra_historia/Cuadro 1 - Grupo Eusse.jpg",
-  "/nuestra_historia/Cuadro 2 - Grupo Eusse.jpg",
-  "/nuestra_historia/Cuadro 3 - Grupo Eusse.jpg",
-  "/nuestra_historia/Cuadro 4 - Grupo Eusse.jpg",
-  "/nuestra_historia/Cuadro 5 - Grupo Eusse.jpg",
-  "/nuestra_historia/Cuadro 6 - Grupo Eusse.jpg",
-  "/nuestra_historia/Cuadro 7 - Grupo Eusse.jpg",
-  "/nuestra_historia/Cuadro 8 - Grupo Eusse.jpg",
-  "/nuestra_historia/Cuadro 9 - Grupo Eusse.jpg",
+  "/nuestra_historia/Cuadro 1 - Grupo Eusse.webp",
+  "/nuestra_historia/Cuadro 2 - Grupo Eusse.webp",
+  "/nuestra_historia/Cuadro 3 - Grupo Eusse.webp",
+  "/nuestra_historia/Cuadro 4 - Grupo Eusse.webp",
+  "/nuestra_historia/Cuadro 5 - Grupo Eusse.webp",
+  "/nuestra_historia/Cuadro 6 - Grupo Eusse.webp",
+  "/nuestra_historia/Cuadro 7 - Grupo Eusse.webp",
+  "/nuestra_historia/Cuadro 8 - Grupo Eusse.webp",
+  "/nuestra_historia/Cuadro 9 - Grupo Eusse.webp",
 ];
 
 const total = PHOTOS.length;
