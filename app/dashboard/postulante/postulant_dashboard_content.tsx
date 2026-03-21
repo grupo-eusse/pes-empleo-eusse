@@ -283,7 +283,7 @@ export default function PostulantDashboardContent({
               Panel de seguimiento
             </h1>
             <p className="mt-2 text-sm text-brand-900/70">
-              Monitorea el estado de tus postulaciones y actualiza tu CV general
+              Monitorea el estado de tus postulaciones y actualiza tu perfil en Banco de talentos
               cuando lo necesites.
             </p>
           </div>
@@ -298,7 +298,7 @@ export default function PostulantDashboardContent({
               href="/aplicar-general"
               className="rounded-2xl border border-transparent bg-brand-400 px-5 py-2 text-sm font-semibold text-brand-50 shadow-[0_20px_50px_rgba(0,0,0,0.2)] transition hover:-translate-y-0.5 hover:bg-brand-400/90"
             >
-              {generalCV ? "Actualizar CV general" : "Subir CV general"}
+              {generalCV ? "Actualizar perfil en Banco de talentos" : "Registrar en Banco de talentos"}
             </Link>
           </div>
         </header>
@@ -410,7 +410,7 @@ export default function PostulantDashboardContent({
           <aside className="space-y-6">
             <div className="rounded-3xl border border-transparent bg-white p-6 shadow-[0_20px_60px_rgba(0,0,0,0.05)]">
               <h3 className="text-lg font-semibold text-brand-900">
-                CV general
+                Banco de talentos
               </h3>
               {generalCV ? (
                 <>
@@ -433,21 +433,21 @@ export default function PostulantDashboardContent({
                       href="/aplicar-general"
                       className="flex-1 rounded-2xl border border-transparent bg-brand-400 px-4 py-2 text-sm font-semibold text-white shadow-[0_12px_32px_rgba(0,0,0,0.06)] transition hover:-translate-y-0.5 text-center"
                     >
-                      Actualizar CV
+                      Actualizar perfil
                     </Link>
                   </div>
                 </>
               ) : (
                 <>
                   <p className="mt-2 text-sm text-brand-900/70">
-                    Aún no registras tu CV general. Hazlo para que te
+                    Aún no estás registrado en Banco de talentos. Hazlo para que te
                     consideremos en futuras vacantes.
                   </p>
                   <Link
                     href="/aplicar-general"
                     className="mt-4 block w-full rounded-2xl border border-transparent bg-brand-400 px-4 py-2 text-sm font-semibold text-white text-center shadow-[0_12px_32px_rgba(0,0,0,0.15)] transition hover:-translate-y-0.5"
                   >
-                    Subir CV general
+                    Registrar perfil
                   </Link>
                 </>
               )}

@@ -23,7 +23,7 @@ export default async function AdminDashboardLayout({ children }: { children: Rea
         <p className="text-xs uppercase tracking-[0.35em] text-brand-600">Panel RRHH</p>
         <h1 className="mt-2 text-4xl font-bold text-brand-900">Administración centralizada</h1>
         <p className="mt-2 text-brand-900/70">
-          Publica ofertas, revisa postulaciones, gestiona CV generales y controla permisos internos.
+          Publica ofertas, revisa postulaciones, gestiona el Banco de talentos y controla permisos internos.
         </p>
       </section>
 
@@ -31,7 +31,7 @@ export default async function AdminDashboardLayout({ children }: { children: Rea
         <div className="flex flex-wrap items-center gap-2 rounded-2xl border border-transparent bg-white p-2 shadow-[0_20px_60px_rgba(0,0,0,0.05)]">
           <TabLink href="/dashboard/puestos">Gestión de ofertas</TabLink>
           <TabLink href="/dashboard/aplicaciones">Postulaciones</TabLink>
-          <TabLink href="/dashboard/resumes">CV generales</TabLink>
+          <TabLink href="/dashboard/resumes">Banco de talentos</TabLink>
           {isAdmin && (
             <>
               <TabLink href="/dashboard/configuracion">Configuración</TabLink>

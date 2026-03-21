@@ -235,7 +235,7 @@ export default function JobsPageContent({ isAuthenticated, userRole, jobs, compa
                 No encontramos vacantes con los filtros seleccionados.
               </p>
               <p className="mt-2 text-sm text-brand-900/60">
-                Intenta con otra ubicación o envía tu CV general para futuras oportunidades.
+                Intenta con otra ubicación o regístrate en nuestro Banco de talentos para futuras oportunidades.
               </p>
             </div>
           )}
@@ -298,7 +298,7 @@ export default function JobsPageContent({ isAuthenticated, userRole, jobs, compa
             <p className="text-2xl font-semibold">¿No encontraste lo que buscabas?</p>
             <p className="mt-2 text-xl font-semibold">Forma parte de nuestro banco de talentos</p>
             <p className="mt-3 text-sm text-brand-50/70">
-              Te consideramos para vacantes futuras durante 3 meses manteniendo tu CV actualizado.
+              Te consideramos para vacantes futuras durante 3 meses manteniendo tu perfil actualizado.
             </p>
           </div>
           <div className="px-6 py-6">
@@ -316,7 +316,7 @@ export default function JobsPageContent({ isAuthenticated, userRole, jobs, compa
               </Link>
             ) : isPostulant && hasGeneralCv === true ? (
               <div className="rounded-2xl border border-transparent bg-brand-800/80 px-5 py-3 text-center text-sm font-semibold text-brand-50 shadow-[0_20px_50px_rgba(0,0,0,0.15)]">
-                Ya registraste tu CV general. Actualízalo desde tu dashboard si lo necesitas.
+                Ya formas parte del Banco de talentos. Actualiza tu perfil desde el dashboard si lo necesitas.
               </div>
             ) : isHrOrAdmin ? (
               <button

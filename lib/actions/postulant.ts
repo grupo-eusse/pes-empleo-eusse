@@ -142,7 +142,7 @@ export async function uploadGeneralCV(formData: FormData): Promise<ActionResult>
   if (fileError) return { error: fileError };
 
   if (!positionId || !locationId) {
-    return { error: 'Selecciona una posición y ubicación para registrar tu CV en la base de talentos' };
+    return { error: 'Selecciona una posición y ubicación para registrarte en el Banco de talentos' };
   }
 
   const fileExt = file.name.split('.').pop();
@@ -208,7 +208,7 @@ export async function uploadGeneralCV(formData: FormData): Promise<ActionResult>
     console.error('Error inserting CV record:', insertError);
     // Intentar limpiar el archivo subido
     await supabase.storage.from(bucketName).remove([filePath]);
-    return { error: 'Error al registrar el CV' };
+    return { error: 'Error al registrar tu perfil en Banco de talentos' };
   }
 
   // Crear entrada en talent_pool_cv con posición y ubicación
@@ -226,7 +226,7 @@ export async function uploadGeneralCV(formData: FormData): Promise<ActionResult>
     // Revertir insert de CV para evitar registros huérfanos
     await supabase.from('candidate_cvs').delete().eq('id', insertedCV.id);
     await supabase.storage.from(bucketName).remove([filePath]);
-    return { error: 'Error al registrar tu CV en la base de talentos. Intenta de nuevo.' };
+    return { error: 'Error al registrarte en el Banco de talentos. Intenta de nuevo.' };
   }
 
   revalidatePath('/dashboard/postulante');
@@ -418,7 +418,7 @@ export async function submitJobApplication(formData: FormData): Promise<ActionRe
       .single();
 
     if (cvError || !generalCV) {
-      return { error: 'No tienes un CV general registrado. Por favor, sube uno primero.' };
+      return { error: 'No tienes un perfil registrado en Banco de talentos. Regístralo primero.' };
     }
 
     finalCvId = generalCV.id;
@@ -726,7 +726,7 @@ export async function getGeneralCV(): Promise<{ cv?: { id: number; path: string;
 
   if (error && error.code !== 'PGRST116') {
     console.error('Error fetching general CV:', error);
-    return { error: 'Error al obtener el CV' };
+    return { error: 'Error al obtener tu registro de Banco de talentos' };
   }
 
   return { cv: cv || undefined };
