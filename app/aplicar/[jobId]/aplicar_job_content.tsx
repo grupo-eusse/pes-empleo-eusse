@@ -231,12 +231,12 @@ export default function AplicarJobContent({ job, userName, userEmail }: Props) {
               <div className="grid gap-4 sm:grid-cols-2">
                 <label className="block text-sm text-brand-900/70">
                   Número de cédula
-                  <input required value={idNumber} onChange={e => setIdNumber(e.target.value)} placeholder="Ej: 123456789" disabled={loading}
+                  <input required value={idNumber} onChange={e => setIdNumber(e.target.value)} placeholder="Escribí tu número de cédula" disabled={loading}
                     className="mt-1 w-full rounded-2xl border border-transparent bg-brand-50 px-3 py-2 text-brand-900 outline-none focus:ring-2 focus:ring-brand-400/40" />
                 </label>
                 <label className="block text-sm text-brand-900/70">
                   Teléfono
-                  <input required value={phone} onChange={e => setPhone(e.target.value)} placeholder="Ej: 88881234" disabled={loading}
+                  <input required value={phone} onChange={e => setPhone(e.target.value)} placeholder="Escribí tu número de teléfono" disabled={loading}
                     className="mt-1 w-full rounded-2xl border border-transparent bg-brand-50 px-3 py-2 text-brand-900 outline-none focus:ring-2 focus:ring-brand-400/40" />
                 </label>
               </div>
@@ -262,7 +262,7 @@ export default function AplicarJobContent({ job, userName, userEmail }: Props) {
 
               <label className="block text-sm text-brand-900/70">
                 Detalle de dirección (opcional)
-                <input value={addressDetail} onChange={e => setAddressDetail(e.target.value)} placeholder="Barrio, calle, punto de referencia..." disabled={loading}
+                <input value={addressDetail} onChange={e => setAddressDetail(e.target.value)} placeholder="Agregá barrio, calle o una referencia" disabled={loading}
                   className="mt-1 w-full rounded-2xl border border-transparent bg-brand-50 px-3 py-2 text-brand-900 outline-none focus:ring-2 focus:ring-brand-400/40" />
               </label>
             </fieldset>
@@ -282,7 +282,7 @@ export default function AplicarJobContent({ job, userName, userEmail }: Props) {
                     <button type="button" onClick={() => removeEducation(i)} className="text-xs text-red-500 hover:text-red-700">Eliminar</button>
                   </div>
                   <div className="grid gap-3 sm:grid-cols-2">
-                    <input placeholder="Institución" value={edu.institutionName} onChange={e => updateEducation(i, 'institutionName', e.target.value)} disabled={loading}
+                    <input placeholder="Escribí el nombre de la institución" value={edu.institutionName} onChange={e => updateEducation(i, 'institutionName', e.target.value)} disabled={loading}
                       className="w-full rounded-xl border border-transparent bg-white px-3 py-2 text-sm text-brand-900 outline-none focus:ring-2 focus:ring-brand-400/40" />
                     <select value={edu.degreeLevel} onChange={e => updateEducation(i, 'degreeLevel', e.target.value)} disabled={loading}
                       className="w-full rounded-xl border border-transparent bg-white px-3 py-2 text-sm text-brand-900 outline-none focus:ring-2 focus:ring-brand-400/40">
@@ -290,12 +290,12 @@ export default function AplicarJobContent({ job, userName, userEmail }: Props) {
                       {DEGREE_LEVELS.map(d => <option key={d} value={d}>{d}</option>)}
                     </select>
                   </div>
-                  <input placeholder="Campo de estudio" value={edu.fieldOfStudy} onChange={e => updateEducation(i, 'fieldOfStudy', e.target.value)} disabled={loading}
+                  <input placeholder="Escribí tu área de estudio" value={edu.fieldOfStudy} onChange={e => updateEducation(i, 'fieldOfStudy', e.target.value)} disabled={loading}
                     className="w-full rounded-xl border border-transparent bg-white px-3 py-2 text-sm text-brand-900 outline-none focus:ring-2 focus:ring-brand-400/40" />
                   <div className="grid gap-3 sm:grid-cols-2">
-                    <input type="date" placeholder="Inicio" value={edu.startDate} onChange={e => updateEducation(i, 'startDate', e.target.value)} disabled={loading}
+                    <input type="date" placeholder="Fecha de inicio" value={edu.startDate} onChange={e => updateEducation(i, 'startDate', e.target.value)} disabled={loading}
                       className="w-full rounded-xl border border-transparent bg-white px-3 py-2 text-sm text-brand-900 outline-none focus:ring-2 focus:ring-brand-400/40" />
-                    <input type="date" placeholder="Fin" value={edu.endDate} onChange={e => updateEducation(i, 'endDate', e.target.value)} disabled={loading || edu.isInProgress}
+                    <input type="date" placeholder="Fecha de finalización" value={edu.endDate} onChange={e => updateEducation(i, 'endDate', e.target.value)} disabled={loading || edu.isInProgress}
                       className="w-full rounded-xl border border-transparent bg-white px-3 py-2 text-sm text-brand-900 outline-none focus:ring-2 focus:ring-brand-400/40" />
                   </div>
                   <label className="flex items-center gap-2 text-xs text-brand-900/60">
@@ -321,9 +321,9 @@ export default function AplicarJobContent({ job, userName, userEmail }: Props) {
                     <button type="button" onClick={() => removeWork(i)} className="text-xs text-red-500 hover:text-red-700">Eliminar</button>
                   </div>
                   <div className="grid gap-3 sm:grid-cols-2">
-                    <input placeholder="Empresa" required value={work.companyName} onChange={e => updateWork(i, 'companyName', e.target.value)} disabled={loading}
+                    <input placeholder="Escribí el nombre de la empresa" required value={work.companyName} onChange={e => updateWork(i, 'companyName', e.target.value)} disabled={loading}
                       className="w-full rounded-xl border border-transparent bg-white px-3 py-2 text-sm text-brand-900 outline-none focus:ring-2 focus:ring-brand-400/40" />
-                    <input placeholder="Puesto" required value={work.jobTitle} onChange={e => updateWork(i, 'jobTitle', e.target.value)} disabled={loading}
+                    <input placeholder="Escribí el puesto que desempeñaste" required value={work.jobTitle} onChange={e => updateWork(i, 'jobTitle', e.target.value)} disabled={loading}
                       className="w-full rounded-xl border border-transparent bg-white px-3 py-2 text-sm text-brand-900 outline-none focus:ring-2 focus:ring-brand-400/40" />
                   </div>
                   <div className="grid gap-3 sm:grid-cols-2">
@@ -336,7 +336,7 @@ export default function AplicarJobContent({ job, userName, userEmail }: Props) {
                     <input type="checkbox" checked={work.isCurrent} onChange={e => updateWork(i, 'isCurrent', e.target.checked)} />
                     Trabajo actual
                   </label>
-                  <textarea placeholder="Responsabilidades (opcional)" value={work.responsibilities} onChange={e => updateWork(i, 'responsibilities', e.target.value)} disabled={loading}
+                  <textarea placeholder="Contanos cuáles eran tus responsabilidades" value={work.responsibilities} onChange={e => updateWork(i, 'responsibilities', e.target.value)} disabled={loading}
                     rows={2} className="w-full rounded-xl border border-transparent bg-white px-3 py-2 text-sm text-brand-900 outline-none focus:ring-2 focus:ring-brand-400/40 resize-none" />
                 </div>
               ))}

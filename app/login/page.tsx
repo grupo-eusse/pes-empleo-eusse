@@ -76,7 +76,7 @@ function LoginContent() {
               required
               type="email"
               name="email"
-              placeholder="tu@correo.com"
+              placeholder="Escribí tu correo electrónico"
               autoComplete="email"
               disabled={isPending}
               className="mt-1 w-full rounded-2xl border border-transparent bg-brand-50 px-3 py-2 text-brand-900 outline-none focus:ring-2 focus:ring-brand-400/40"

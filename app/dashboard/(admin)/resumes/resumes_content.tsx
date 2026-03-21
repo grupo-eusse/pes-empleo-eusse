@@ -43,7 +43,7 @@ function SearchControls({
         <input
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          placeholder="Buscar por nombre, posición o ubicación"
+          placeholder="Buscá por nombre, posición o ubicación"
           className="flex-1 min-w-55 rounded-2xl border border-transparent bg-brand-50 px-4 py-2 text-sm text-brand-900 outline-none focus:ring-2 focus:ring-brand-400/40"
         />
         <button

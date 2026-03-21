@@ -142,7 +142,7 @@ export default function JobsPageContent({ isAuthenticated, userRole, jobs, compa
                   setSearch(e.target.value);
                   setCurrentPage(1);
                 }}
-                placeholder="Puesto, empresa o palabra clave"
+                placeholder="Buscá por puesto, empresa o palabra clave"
                 className="mt-1 w-full rounded-2xl border border-transparent bg-brand-50 px-3 py-2 text-brand-900 outline-none ring-1 ring-brand-100 focus:ring-2 focus:ring-brand-400/50"
               />
             </div>

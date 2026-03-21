@@ -97,7 +97,7 @@ export default function RegisterPage() {
                 <input
                   required
                   name="fullName"
-                  placeholder="Ej: Juan Pérez García"
+                  placeholder="Escribí tu nombre completo"
                   disabled={isPending}
                   className="mt-1 w-full rounded-2xl border border-transparent bg-brand-50 px-3 py-2 text-brand-900 outline-none focus:ring-2 focus:ring-brand-400/40"
                 />
@@ -109,7 +109,7 @@ export default function RegisterPage() {
                   required
                   type="email"
                   name="email"
-                  placeholder="tu@correo.com"
+                  placeholder="Escribí tu correo electrónico"
                   disabled={isPending}
                   className="mt-1 w-full rounded-2xl border border-transparent bg-brand-50 px-3 py-2 text-brand-900 outline-none focus:ring-2 focus:ring-brand-400/40"
                 />
@@ -124,7 +124,7 @@ export default function RegisterPage() {
                     name="password"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    placeholder="Mínimo 8 caracteres"
+                    placeholder="Creá una contraseña de al menos 8 caracteres"
                     minLength={8}
                     disabled={isPending}
                     className="w-full rounded-2xl border border-transparent bg-brand-50 px-3 py-2 pr-10 text-brand-900 outline-none focus:ring-2 focus:ring-brand-400/40"
@@ -146,7 +146,7 @@ export default function RegisterPage() {
                     type={showConfirmPassword ? 'text' : 'password'}
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
-                    placeholder="Repite tu contraseña"
+                    placeholder="Volvé a escribir tu contraseña"
                     disabled={isPending}
                     className={`w-full rounded-2xl border bg-brand-50 px-3 py-2 pr-10 text-brand-900 outline-none focus:ring-2 focus:ring-brand-400/40 ${
                       confirmPassword.length > 0 && password !== confirmPassword ? 'border-red-300' : 'border-transparent'

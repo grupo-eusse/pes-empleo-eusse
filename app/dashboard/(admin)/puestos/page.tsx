@@ -189,7 +189,7 @@ export default function RecruiterJobsPage() {
             <input
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              placeholder="Buscar título, empresa o descripción"
+              placeholder="Buscá por título, empresa o descripción"
               className="w-full rounded-2xl border border-transparent bg-brand-50 px-4 py-2 text-sm text-brand-900 outline-none focus:ring-2 focus:ring-brand-400/40"
             />
           </div>

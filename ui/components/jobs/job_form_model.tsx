@@ -217,7 +217,7 @@ export default function JobFormModal({
               onChange={(e) => setTitle(e.target.value)}
               disabled={isPending}
               className="w-full rounded-xl border border-brand-200 px-4 py-2 outline-none focus:ring-2 focus:ring-brand-400/40 disabled:opacity-50"
-              placeholder="Ej: Asistente de Ventas"
+              placeholder="Escribí el título del puesto"
             />
           </div>
 
@@ -229,7 +229,7 @@ export default function JobFormModal({
               disabled={isPending}
               rows={4}
               className="w-full rounded-xl border border-brand-200 px-4 py-2 outline-none focus:ring-2 focus:ring-brand-400/40 disabled:opacity-50"
-              placeholder="Describe las responsabilidades y requisitos del puesto..."
+              placeholder="Detallá las responsabilidades y requisitos del puesto"
             />
           </div>
 
@@ -274,7 +274,7 @@ export default function JobFormModal({
                     rows={2}
                     disabled={isPending}
                     className="mt-2 w-full rounded-xl border border-brand-200 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-brand-400/40 disabled:opacity-50"
-                    placeholder="Ej. ¿Qué experiencia tienes liderando equipos de venta?"
+                    placeholder="Escribí la pregunta que debe responder la persona candidata"
                   />
                   <label className="mt-2 block text-xs font-semibold text-brand-700">
                     Tipo de respuesta
@@ -307,7 +307,7 @@ export default function JobFormModal({
                     onChange={(e) => setNewCompanyName(e.target.value)}
                     disabled={isPending}
                     className="flex-1 rounded-xl border border-brand-200 px-3 py-2 text-sm outline-none"
-                    placeholder="Nombre de empresa"
+                    placeholder="Escribí el nombre de la empresa"
                   />
                   <button
                     type="button"
@@ -360,7 +360,7 @@ export default function JobFormModal({
                     onChange={(e) => setNewLocationName(e.target.value)}
                     disabled={isPending}
                     className="flex-1 rounded-xl border border-brand-200 px-3 py-2 text-sm outline-none"
-                    placeholder="Nombre de ubicación"
+                    placeholder="Escribí el nombre de la ubicación"
                   />
                   <button
                     type="button"

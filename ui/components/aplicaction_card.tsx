@@ -196,7 +196,7 @@ function NotesThread({
             type="text"
             value={newNote}
             onChange={(e) => setNewNote(e.target.value)}
-            placeholder="Escribe una nota..."
+            placeholder="Agregá una nota para el equipo"
             disabled={isPending}
             className="flex-1 rounded-xl border border-brand-200 bg-white px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-brand-400/40 disabled:opacity-50"
           />

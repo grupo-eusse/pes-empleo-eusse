@@ -124,7 +124,7 @@ export default function ConfiguracionContent({
           items={companies}
           itemName="compañía"
           fieldName="name"
-          placeholder="Nombre de la compañía"
+          placeholder="Escribí el nombre de la compañía"
           showActiveStatus={false}
           onShowMessage={(type, message) => type === "error" ? showError(message) : showSuccess(message)}
           onUpdateItems={setCompanies}
@@ -141,7 +141,7 @@ export default function ConfiguracionContent({
           items={locations}
           itemName="ubicación"
           fieldName="name"
-          placeholder="Nombre de la ubicación"
+          placeholder="Escribí el nombre de la ubicación"
           showActiveStatus={false}
           onShowMessage={(type, message) => type === "error" ? showError(message) : showSuccess(message)}
           onUpdateItems={setLocations}
@@ -158,7 +158,7 @@ export default function ConfiguracionContent({
           items={positions}
           itemName="posición"
           fieldName="description"
-          placeholder="Descripción de la posición"
+          placeholder="Escribí la descripción de la posición"
           showActiveStatus={true}
           onShowMessage={(type, message) => type === "error" ? showError(message) : showSuccess(message)}
           onUpdateItems={setPositions}

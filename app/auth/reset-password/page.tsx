@@ -78,7 +78,7 @@ export default function ResetPasswordPage() {
               minLength={8}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              placeholder="Mínimo 8 caracteres"
+              placeholder="Creá una contraseña de al menos 8 caracteres"
               disabled={loading}
               className="mt-1 w-full rounded-2xl border border-transparent bg-brand-50 px-3 py-2 text-brand-900 outline-none focus:ring-2 focus:ring-brand-400/40"
             />
@@ -92,7 +92,7 @@ export default function ResetPasswordPage() {
               minLength={8}
               value={confirm}
               onChange={(e) => setConfirm(e.target.value)}
-              placeholder="Repite tu contraseña"
+              placeholder="Volvé a escribir tu contraseña"
               disabled={loading}
               className="mt-1 w-full rounded-2xl border border-transparent bg-brand-50 px-3 py-2 text-brand-900 outline-none focus:ring-2 focus:ring-brand-400/40"
             />

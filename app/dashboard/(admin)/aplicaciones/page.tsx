@@ -189,7 +189,7 @@ export default function ApplicationsPage() {
                 setSearch(e.target.value);
                 setPage(1);
               }}
-              placeholder="Buscar candidato, puesto o empresa"
+              placeholder="Buscá por candidato, puesto o empresa"
               className="w-full rounded-2xl border border-transparent bg-brand-50 px-4 py-2 text-sm text-brand-900 outline-none focus:ring-2 focus:ring-brand-400/40"
             />
           </div>
