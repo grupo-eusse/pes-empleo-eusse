@@ -1,6 +1,7 @@
 'use server';
 
 import { createClient } from '@/lib/supabase/server';
+import { mapTalentPoolEntriesToGeneralCvs } from '@/lib/actions/resume_mappers';
 
 export type CvType = 'general' | 'job_specific';
 
@@ -25,20 +26,6 @@ export interface GeneralCvData {
     position?: { id: number; description: string } | null;
     location?: { id: number; name: string } | null;
   };
-}
-
-type CandidateData = NonNullable<GeneralCvData['candidate']>;
-type TalentPoolData = NonNullable<GeneralCvData['talent_pool']>;
-
-interface GeneralCvRow extends Omit<GeneralCvData, 'candidate' | 'talent_pool'> {
-  candidate?: CandidateData;
-}
-
-interface TalentPoolCvRow {
-  id: number;
-  position: NonNullable<TalentPoolData['position']>[] | null;
-  location: NonNullable<TalentPoolData['location']>[] | null;
-  cv: GeneralCvRow[] | null;
 }
 
 function getErrorMessage(error: unknown): string {
@@ -80,19 +67,7 @@ export async function getGeneralCvs(): Promise<{ data: GeneralCvData[] | null; e
       throw error;
     }
 
-    const data: GeneralCvData[] = ((entries ?? []) as unknown as TalentPoolCvRow[])
-      .filter((entry) => entry.cv !== null && entry.cv.length > 0)
-      .map((entry) => ({
-        ...entry.cv![0],
-        candidate: entry.cv?.[0]?.candidate,
-        talent_pool: {
-          id: entry.id,
-          position_id: entry.position?.[0]?.id ?? null,
-          location_id: entry.location?.[0]?.id ?? null,
-          position: entry.position?.[0] ?? null,
-          location: entry.location?.[0] ?? null,
-        },
-      }));
+    const data = mapTalentPoolEntriesToGeneralCvs(entries) as GeneralCvData[];
 
     return { data };
   } catch (error) {
