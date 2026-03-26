@@ -1,20 +1,59 @@
 import { NextResponse } from 'next/server';
 import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
+import { createAdminClient } from '@/lib/supabase/admin';
+import { getInvitedAdminRole } from '@/lib/invite_utils';
 import type { UserRole } from '@/types/auth';
 
 const ROLE_REDIRECT: Record<UserRole, string> = {
   postulant: '/dashboard/postulante',
-  hr:        '/dashboard/puestos',
-  admin:     '/dashboard/puestos',
+  hr: '/dashboard/puestos',
+  admin: '/dashboard/puestos',
 };
+
+async function syncInvitedUserRole(user: { id: string; email?: string | null; user_metadata?: unknown }) {
+  const invitedRole = getInvitedAdminRole(user.user_metadata);
+
+  if (!invitedRole) {
+    return;
+  }
+
+  const adminClient = createAdminClient();
+  if (!adminClient) {
+    console.error('SUPABASE_SERVICE_ROLE_KEY is required to sync invited roles');
+    return;
+  }
+
+  const { error: profileError } = await adminClient
+    .from('user_profile')
+    .update({ user_role: invitedRole, is_active: true })
+    .eq('supabase_id', user.id);
+
+  if (profileError) {
+    console.error('Error syncing invited role:', profileError);
+  }
+
+  if (!user.email) {
+    return;
+  }
+
+  const { error: inviteError } = await adminClient
+    .from('user_invite')
+    .update({ accepted_at: new Date().toISOString() })
+    .eq('email', user.email)
+    .eq('role', invitedRole)
+    .is('accepted_at', null);
+
+  if (inviteError) {
+    console.error('Error marking invite as accepted:', inviteError);
+  }
+}
 
 export async function GET(request: Request) {
   const { searchParams, origin } = new URL(request.url);
   const code = searchParams.get('code');
   const next = searchParams.get('next');
 
-  // Sanitize: only allow internal paths (starting with / but not //)
   const safePath = next && next.startsWith('/') && !next.startsWith('//') ? next : null;
 
   if (code) {
@@ -40,23 +79,30 @@ export async function GET(request: Request) {
 
     const { error } = await supabase.auth.exchangeCodeForSession(code);
     if (!error) {
-      // If there's a safe returnUrl, use it
-      if (safePath) {
-        return NextResponse.redirect(`${origin}${safePath}`);
-      }
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
 
-      // Otherwise, redirect based on user role
-      const { data: { user } } = await supabase.auth.getUser();
       if (user) {
+        await syncInvitedUserRole(user);
+
         const { data: profile } = await supabase
           .from('user_profile')
           .select('user_role')
           .eq('supabase_id', user.id)
           .single();
 
+        if (safePath) {
+          return NextResponse.redirect(`${origin}${safePath}`);
+        }
+
         const role = profile?.user_role as UserRole | undefined;
         const dest = (role && ROLE_REDIRECT[role]) || '/';
         return NextResponse.redirect(`${origin}${dest}`);
+      }
+
+      if (safePath) {
+        return NextResponse.redirect(`${origin}${safePath}`);
       }
 
       return NextResponse.redirect(`${origin}/`);

@@ -1,4 +1,3 @@
-import { redirect } from 'next/navigation';
 import { getCurrentUser } from '@/lib/supabase/server';
 import {
   getAdminUsers,
@@ -17,11 +16,14 @@ import {
 import ConfiguracionContent from './configuracion_content';
 
 export default async function ConfiguracionDashboardPage() {
-  const { user, profile } = await getCurrentUser();
+  const { profile } = await getCurrentUser();
 
-  // Verificación de autorización
-  if (!user || !profile || profile.user_role !== 'admin') {
-    redirect('/dashboard/puestos');
+  if (!profile) {
+    return (
+      <div className="rounded-3xl border border-transparent bg-white p-8 text-center shadow-[0_25px_70px_rgba(0,0,0,0.06)]">
+        <p className="text-brand-900/70">No se pudo verificar la sesion actual.</p>
+      </div>
+    );
   }
 
   let initialUsers: UserProfileData[] = [];
@@ -48,7 +50,7 @@ export default async function ConfiguracionDashboardPage() {
   } catch {
     return (
       <div className="rounded-3xl border border-transparent bg-white p-8 shadow-[0_25px_70px_rgba(0,0,0,0.06)] text-center">
-        <p className="text-brand-900/70">Error al cargar la configuración. Intenta recargar la página.</p>
+        <p className="text-brand-900/70">Error al cargar la configuracion. Intenta recargar la pagina.</p>
       </div>
     );
   }

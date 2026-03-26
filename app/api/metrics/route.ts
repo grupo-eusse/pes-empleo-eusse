@@ -1,8 +1,19 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createClient } from "@/lib/supabase/server";
+
 import type { ApplicationStatus } from "@/lib/constants";
+import { createClient, getCurrentUser } from "@/lib/supabase/server";
 
 export async function GET(request: NextRequest) {
+  const { user, profile } = await getCurrentUser();
+
+  if (!user || !profile) {
+    return NextResponse.json({ error: "No autenticado" }, { status: 401 });
+  }
+
+  if (profile.user_role !== "admin") {
+    return NextResponse.json({ error: "No autorizado" }, { status: 403 });
+  }
+
   const rangeDays = Math.min(
     365,
     Math.max(1, Number(request.nextUrl.searchParams.get("rangeDays")) || 30)
@@ -10,14 +21,13 @@ export async function GET(request: NextRequest) {
 
   const supabase = await createClient();
   if (!supabase) {
-    return NextResponse.json({ error: "Error de configuración del servidor" }, { status: 500 });
+    return NextResponse.json({ error: "Error de configuracion del servidor" }, { status: 500 });
   }
 
   const since = new Date();
   since.setDate(since.getDate() - rangeDays);
   const sinceISO = since.toISOString();
 
-  // Fetch applications in the date range with joined job → company
   const { data: apps, error } = await supabase
     .from("job_application")
     .select(
@@ -41,7 +51,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 
-  const applications = (apps || []) as unknown as Array<{
+  const applications = ((apps || []) as unknown) as Array<{
     id: number;
     status: ApplicationStatus;
     created_at: string;
@@ -51,14 +61,11 @@ export async function GET(request: NextRequest) {
   }>;
 
   const totalApplications = applications.length;
-
-  // By status
   const byStatus: Record<string, number> = {};
   for (const app of applications) {
     byStatus[app.status] = (byStatus[app.status] || 0) + 1;
   }
 
-  // Conversion ratios
   const contacted = byStatus["contacted"] || 0;
   const inReview = byStatus["in_review"] || 0;
   const rejected = byStatus["rejected"] || 0;
@@ -67,8 +74,6 @@ export async function GET(request: NextRequest) {
   const conversionInReview = totalApplications > 0 ? inReview / totalApplications : 0;
   const rejectedRatio = totalApplications > 0 ? rejected / totalApplications : 0;
 
-  // Average hours between status transitions
-  // received → in_review: diff between created_at and status_changed_at for apps in_review
   const inReviewApps = applications.filter((a) => a.status === "in_review");
   let avgHoursReceivedToReview: number | null = null;
   if (inReviewApps.length > 0) {
@@ -80,7 +85,6 @@ export async function GET(request: NextRequest) {
     avgHoursReceivedToReview = total / inReviewApps.length / 3600000;
   }
 
-  // in_review → contacted
   const contactedApps = applications.filter((a) => a.status === "contacted");
   let avgHoursReviewToContact: number | null = null;
   if (contactedApps.length > 0) {
@@ -92,7 +96,6 @@ export async function GET(request: NextRequest) {
     avgHoursReviewToContact = total / contactedApps.length / 3600000;
   }
 
-  // Education & experience coverage – count apps that have related records
   const appIds = applications.map((a) => a.id);
   let withEducation = 0;
   let withExperience = 0;
@@ -113,28 +116,23 @@ export async function GET(request: NextRequest) {
     withExperience = new Set((expResult.data || []).map((r) => r.application_id)).size;
   }
 
-  // By company
   const byCompany: Record<string, number> = {};
   for (const app of applications) {
     const companyName =
-      (app.job as { id: number; company_data?: { name: string } } | null)?.company_data?.name || "Sin empresa";
+      app.job?.company_data?.name || "Sin empresa";
     byCompany[companyName] = (byCompany[companyName] || 0) + 1;
   }
 
-  // By province
   const byProvince: Record<string, number> = {};
   for (const app of applications) {
     const code = app.residence_province_code?.toString() || "0";
     byProvince[code] = (byProvince[code] || 0) + 1;
   }
 
-  // Contact SLA - hours to first contact (use avg)
-  const contactSLAHours = avgHoursReviewToContact;
-
   return NextResponse.json({
     totalApplications,
     byStatus,
-    contactSLAHours,
+    contactSLAHours: avgHoursReviewToContact,
     conversionContacted,
     conversionInReview,
     rejectedRatio,

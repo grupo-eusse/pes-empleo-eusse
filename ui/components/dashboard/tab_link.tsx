@@ -20,6 +20,7 @@ export default function TabLink({ href, children }: TabLinkProps) {
   return (
     <Link
       href={href}
+      prefetch={false}
       className={clsx(BASE_CLASSES, isActive ? ACTIVE_CLASSES : INACTIVE_CLASSES)}
       aria-current={isActive ? "page" : undefined}
     >

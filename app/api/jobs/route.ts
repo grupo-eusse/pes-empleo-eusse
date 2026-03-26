@@ -1,32 +1,55 @@
 import { NextRequest, NextResponse } from "next/server";
+
+import { getCurrentUser } from "@/lib/supabase/server";
 import {
-  getJobs,
+  addQuestion,
+  createCompany,
+  createJob,
+  createLocation,
+  deleteJob,
+  deleteQuestion,
+  duplicateJob,
   getCompanies,
+  getJobs,
   getLocations,
   getPositions,
-  createJob,
   updateJob,
   updateJobStatus,
-  duplicateJob,
-  deleteJob,
-  addQuestion,
-  deleteQuestion,
-  createCompany,
-  createLocation,
 } from "@/lib/actions/jobs.server";
 import type { JobStatus, QuestionFormat } from "@/types/jobs";
 
-export async function GET(request: NextRequest) {
-  const type = request.nextUrl.searchParams.get('type');
+const STAFF_ROLES = new Set(["hr", "admin"]);
 
-  if (type === 'positions') {
+async function requireStaffUser() {
+  const { user, profile } = await getCurrentUser();
+
+  if (!user || !profile) {
+    return NextResponse.json({ error: "No autenticado" }, { status: 401 });
+  }
+
+  if (!STAFF_ROLES.has(profile.user_role)) {
+    return NextResponse.json({ error: "No autorizado" }, { status: 403 });
+  }
+
+  return null;
+}
+
+export async function GET(request: NextRequest) {
+  const type = request.nextUrl.searchParams.get("type");
+
+  if (type === "positions") {
     const result = await getPositions();
     return NextResponse.json({ data: result.data || [] });
   }
 
-  if (type === 'locations') {
+  if (type === "locations") {
     const result = await getLocations();
     return NextResponse.json({ data: result.data || [] });
+  }
+
+  const authError = await requireStaffUser();
+  if (authError) {
+    return authError;
   }
 
   const [jobsResult, companiesResult, locationsResult] = await Promise.all([
@@ -50,18 +73,23 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
+  const authError = await requireStaffUser();
+  if (authError) {
+    return authError;
+  }
+
   let body: { action: string; payload: Record<string, unknown> };
 
   try {
     body = await request.json();
   } catch {
-    return NextResponse.json({ error: "Cuerpo de solicitud inválido" }, { status: 400 });
+    return NextResponse.json({ error: "Cuerpo de solicitud invalido" }, { status: 400 });
   }
 
   const { action, payload } = body;
 
   if (!action || typeof action !== "string") {
-    return NextResponse.json({ error: "Acción no especificada" }, { status: 400 });
+    return NextResponse.json({ error: "Accion no especificada" }, { status: 400 });
   }
 
   switch (action) {
@@ -127,11 +155,11 @@ export async function POST(request: NextRequest) {
     case "addQuestion": {
       const jobId = Number(payload.jobId);
       const description = payload.description as string;
-      const expected_format = (payload.expected_format as QuestionFormat) || "text";
+      const expectedFormat = (payload.expected_format as QuestionFormat) || "text";
       if (!jobId || !description) {
         return NextResponse.json({ error: "jobId y description son requeridos" }, { status: 400 });
       }
-      const result = await addQuestion(jobId, description, expected_format);
+      const result = await addQuestion(jobId, description, expectedFormat);
       return NextResponse.json(result, { status: result.error ? 400 : 200 });
     }
 
@@ -163,6 +191,6 @@ export async function POST(request: NextRequest) {
     }
 
     default:
-      return NextResponse.json({ error: `Acción desconocida: ${action}` }, { status: 400 });
+      return NextResponse.json({ error: `Accion desconocida: ${action}` }, { status: 400 });
   }
 }

@@ -32,6 +32,7 @@ const canAccessDashboard = (role?: UserRole | null) => role === 'hr' || role ===
 
 export default function Navbar() {
   const pathname = usePathname();
+  const disablePrefetch = pathname.startsWith('/dashboard');
   const [isPending, startTransition] = useTransition();
   const [user, setUser] = useState<NavbarUser | null>(null);
   const [userRole, setUserRole] = useState<UserRole | null>(null);
@@ -80,7 +81,11 @@ export default function Navbar() {
   return (
     <header className="sticky top-0 z-50 bg-brand-50/80 backdrop-blur">
       <nav className="relative mx-auto min-h-14 lg:min-h-[7vh] px-4 py-1 flex items-center lg:mx-[5vw]">
-        <Link href="/" className="h-full shrink-0 sm:shrink basis-[200px] sm:basis-60 md:basis-[200px]">
+        <Link
+          href="/"
+          prefetch={disablePrefetch ? false : undefined}
+          className="h-full shrink-0 sm:shrink basis-[200px] sm:basis-60 md:basis-[200px]"
+        >
           <Image
             src="/logo-eusse-completo.webp"
             alt="Eusse"
@@ -106,6 +111,7 @@ export default function Navbar() {
             <li key={link.href} className="shrink-0">
               <Link
                 href={link.href}
+                prefetch={disablePrefetch ? false : undefined}
                 className={`transition-colors duration-200 text-[clamp(1rem,1.5vw,1.3rem)] ${
                   isActive(link.href)
                     ? 'text-accent font-semibold border-b-2 border-accent pb-1'
@@ -119,7 +125,11 @@ export default function Navbar() {
 
           {!user ? (
             <li className="ml-4">
-              <Link href="/login" className="bg-accent text-white font-medium px-4 py-2 rounded-md shadow-sm hover:bg-accent/90 transition-all duration-200">
+              <Link
+                href="/login"
+                prefetch={disablePrefetch ? false : undefined}
+                className="bg-accent text-white font-medium px-4 py-2 rounded-md shadow-sm hover:bg-accent/90 transition-all duration-200"
+              >
                 Iniciar sesion
               </Link>
             </li>
@@ -129,6 +139,7 @@ export default function Navbar() {
                 <li>
                   <Link
                     href="/dashboard/puestos"
+                    prefetch={disablePrefetch ? false : undefined}
                     className={`border border-slate-200 text-brand-900 font-medium px-4 py-2 rounded-md shadow-sm hover:border-accent/50 transition-all duration-200 ${
                       isDashboardActive ? 'border-accent bg-accent/10' : ''
                     }`}
@@ -151,7 +162,7 @@ export default function Navbar() {
         </ul>
 
         <div className="md:hidden ml-2 shrink-0">
-          <BurgerBtn links={links} user={user} userRole={userRole} />
+          <BurgerBtn links={links} user={user} userRole={userRole} disablePrefetch={disablePrefetch} />
         </div>
       </nav>
     </header>

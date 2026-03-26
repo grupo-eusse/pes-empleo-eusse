@@ -15,12 +15,13 @@ interface BurgerBtnProps {
   links: LinkItem[];
   user?: { id: string; email: string } | null;
   userRole?: UserRole | null;
+  disablePrefetch?: boolean;
 }
 
 const canAccessDashboard = (role?: UserRole | null) =>
   role === 'hr' || role === 'admin';
 
-export default function BurgerBtn({ links, user, userRole }: BurgerBtnProps) {
+export default function BurgerBtn({ links, user, userRole, disablePrefetch = false }: BurgerBtnProps) {
   const [isOpen, setIsOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
   const firstLinkRef = useRef<HTMLAnchorElement>(null);
@@ -93,6 +94,7 @@ export default function BurgerBtn({ links, user, userRole }: BurgerBtnProps) {
               <li key={link.href}>
                 <Link
                   href={link.href}
+                  prefetch={disablePrefetch ? false : undefined}
                   ref={index === 0 ? firstLinkRef : undefined}
                   className={`block rounded-lg px-3 py-2 ${
                     isActive(link.href) ? 'text-accent font-semibold' : 'text-brand-900'
@@ -111,6 +113,7 @@ export default function BurgerBtn({ links, user, userRole }: BurgerBtnProps) {
             {!user ? (
               <Link
                 href="/login"
+                prefetch={disablePrefetch ? false : undefined}
                 onClick={() => setIsOpen(false)}
                 className="block w-full text-center bg-accent text-white font-medium px-4 py-3 rounded-xl shadow-sm hover:bg-accent/90 active:scale-[0.99] focus:outline-none focus:ring-2 focus:ring-accent/40 transition"
               >
@@ -121,6 +124,7 @@ export default function BurgerBtn({ links, user, userRole }: BurgerBtnProps) {
                 {canAccessDashboard(userRole) && (
                   <Link
                     href="/dashboard/puestos"
+                    prefetch={disablePrefetch ? false : undefined}
                     onClick={() => setIsOpen(false)}
                     className="block w-full text-center rounded-xl border border-slate-200 px-4 py-3 text-sm font-semibold text-slate-700 hover:border-accent/50 mb-2"
                   >

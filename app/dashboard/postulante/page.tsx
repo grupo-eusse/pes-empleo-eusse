@@ -1,13 +1,10 @@
-import { redirect } from "next/navigation";
-import { createClient } from "@/lib/supabase/server";
-import { getCurrentUser } from "@/lib/supabase/server";
-import PostulantDashboardContent, { 
-  type JobApplicationWithDetails, 
+import { createClient, getCurrentUser } from "@/lib/supabase/server";
+import PostulantDashboardContent, {
+  type JobApplicationWithDetails,
   type CandidateCVGeneral,
   type ApplicationStatusDB,
 } from "./postulant_dashboard_content";
 
-// Tipos para las respuestas de Supabase (las relaciones FK pueden venir como array u objeto)
 interface JobApplicationRow {
   id: number;
   status: ApplicationStatusDB;
@@ -28,7 +25,6 @@ interface JobApplicationRow {
   } | null;
 }
 
-// Helper para extraer objeto de una relación que puede ser array u objeto
 function extractRelation<T>(rel: T | T[] | null | undefined): T | null {
   if (rel === null || rel === undefined) return null;
   if (Array.isArray(rel)) return rel[0] ?? null;
@@ -39,16 +35,14 @@ export default async function PostulantDashboard() {
   const supabase = await createClient();
   const { user, profile } = await getCurrentUser();
 
-  // Verificación de seguridad (también está en layout, pero doble check)
   if (!supabase || !user || !profile) {
-    redirect("/login");
+    return (
+      <div className="rounded-3xl border border-transparent bg-white p-8 text-center shadow-[0_25px_70px_rgba(0,0,0,0.06)]">
+        <p className="text-brand-900/70">No se pudo cargar el panel del postulante.</p>
+      </div>
+    );
   }
 
-  if (profile.user_role !== "postulant") {
-    redirect("/");
-  }
-
-  // Obtener las postulaciones del usuario con datos relacionados
   const { data: applicationsData, error: applicationsError } = await supabase
     .from("job_application")
     .select(`
@@ -83,7 +77,6 @@ export default async function PostulantDashboard() {
     console.error("Error fetching applications:", applicationsError);
   }
 
-  // Obtener el CV general del usuario (cv_type = 'general')
   const { data: generalCVData, error: cvError } = await supabase
     .from("candidate_cvs")
     .select("id, path, bucket, mime_type, file_size_bytes, created_at")
@@ -92,13 +85,11 @@ export default async function PostulantDashboard() {
     .single();
 
   if (cvError && cvError.code !== "PGRST116") {
-    // PGRST116 = no rows found (esto es esperado si el usuario no tiene CV)
     console.error("Error fetching general CV:", cvError);
   }
 
-  // Transformar los datos para que coincidan con los tipos esperados
   const rawData = (applicationsData ?? []) as unknown as JobApplicationRow[];
-  
+
   const applications: JobApplicationWithDetails[] = rawData.map((app) => {
     const job = extractRelation(app.job);
     const cv = extractRelation(app.cv);
@@ -113,7 +104,7 @@ export default async function PostulantDashboard() {
       status_changed_at: app.status_changed_at,
       job: {
         id: job?.id ?? 0,
-        title: job?.title ?? "Sin título",
+        title: job?.title ?? "Sin titulo",
         description: job?.description ?? "",
         company: {
           id: company?.id ?? 0,
@@ -121,7 +112,7 @@ export default async function PostulantDashboard() {
         },
         location: {
           id: location?.id ?? 0,
-          name: location?.name ?? "Sin ubicación",
+          name: location?.name ?? "Sin ubicacion",
         },
       },
       cv: {

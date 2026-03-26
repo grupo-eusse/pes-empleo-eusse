@@ -2,9 +2,9 @@
 
 import { revalidatePath } from 'next/cache';
 import { createClient } from '@/lib/supabase/server';
-import { sendEmail, buildInviteEmailHtml } from '@/lib/mail';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { mapAdminProfilesWithEmails, type AdminProfileRecord } from '@/lib/actions/role_user_mappers';
+import { buildSupabaseInviteOptions, isAdminInviteRole } from '@/lib/invite_utils';
 import type { UserRole } from '@/types/auth';
 
 export interface ActionResult {
@@ -35,6 +35,8 @@ export interface UserInviteData {
 
 type SupabaseClient = NonNullable<Awaited<ReturnType<typeof createClient>>>;
 
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000';
+
 function getErrorMessage(error: unknown): string {
   if (error instanceof Error) {
     return error.message;
@@ -50,7 +52,7 @@ const handleSupabaseError = (error: unknown, context: string): ActionResult => {
 const validateSupabaseClient = async (): Promise<SupabaseClient> => {
   const supabase = await createClient();
   if (!supabase) {
-    throw new Error('Error de configuración del servidor');
+    throw new Error('Error de configuracion del servidor');
   }
   return supabase;
 };
@@ -161,6 +163,7 @@ export async function getInvites(): Promise<{ data: UserInviteData[] | null; err
 export async function createInvite(formData: FormData): Promise<ActionResult> {
   try {
     const supabase = await validateSupabaseClient();
+    const adminClient = createAdminClient();
 
     const email = formData.get('email') as string;
     const role = formData.get('role') as UserRole;
@@ -169,8 +172,12 @@ export async function createInvite(formData: FormData): Promise<ActionResult> {
       return { error: 'Email y rol son requeridos' };
     }
 
-    if (!['hr', 'admin'].includes(role)) {
+    if (!isAdminInviteRole(role)) {
       return { error: 'El rol debe ser hr o admin' };
+    }
+
+    if (!adminClient) {
+      return { error: 'Falta configurar SUPABASE_SERVICE_ROLE_KEY para enviar invitaciones' };
     }
 
     const currentProfile = await getCurrentUserProfile(supabase);
@@ -183,30 +190,27 @@ export async function createInvite(formData: FormData): Promise<ActionResult> {
       .single();
 
     if (existingInvite) {
-      return { error: 'Ya existe una invitación pendiente para este email' };
+      return { error: 'Ya existe una invitacion pendiente para este email' };
     }
 
     const { data: inserted, error } = await supabase
       .from('user_invite')
       .insert({ email, role, created_by: currentProfile.id })
-      .select('token')
+      .select('id')
       .single();
 
     if (error) {
       throw error;
     }
 
-    if (inserted?.token) {
-      const html = await buildInviteEmailHtml(email, role, inserted.token);
-      const mailResult = await sendEmail({
-        to: email,
-        subject: 'Invitación al Portal de Empleo Eusse',
-        html,
-      });
+    const inviteOptions = buildSupabaseInviteOptions(SITE_URL, role);
+    const { error: inviteError } = await adminClient.auth.admin.inviteUserByEmail(email, inviteOptions);
 
-      if (!mailResult.success) {
-        console.error('Failed to send invite email:', mailResult.error);
+    if (inviteError) {
+      if (inserted?.id) {
+        await supabase.from('user_invite').delete().eq('id', inserted.id);
       }
+      return { error: inviteError.message };
     }
 
     revalidatePath('/dashboard/configuracion');
@@ -221,7 +225,7 @@ export async function updateUserRole(userId: string, newRole: UserRole): Promise
     const supabase = await validateSupabaseClient();
 
     if (!['hr', 'admin', 'postulant'].includes(newRole)) {
-      return { error: 'Rol inválido' };
+      return { error: 'Rol invalido' };
     }
 
     const { error } = await supabase
@@ -283,44 +287,34 @@ export async function deleteInvite(inviteId: string): Promise<ActionResult> {
 export async function resendInvite(inviteId: string): Promise<ActionResult> {
   try {
     const supabase = await validateSupabaseClient();
+    const adminClient = createAdminClient();
+
+    if (!adminClient) {
+      return { error: 'Falta configurar SUPABASE_SERVICE_ROLE_KEY para reenviar invitaciones' };
+    }
 
     const { data: originalInvite, error: fetchError } = await supabase
       .from('user_invite')
-      .select('email, role, created_by')
+      .select('email, role')
       .eq('id', inviteId)
       .single();
 
     if (fetchError || !originalInvite) {
-      return { error: 'Invitación no encontrada' };
+      return { error: 'Invitacion no encontrada' };
     }
 
-    await supabase.from('user_invite').delete().eq('id', inviteId);
-
-    const { data: newInvite, error } = await supabase
-      .from('user_invite')
-      .insert({
-        email: originalInvite.email,
-        role: originalInvite.role,
-        created_by: originalInvite.created_by,
-      })
-      .select('token')
-      .single();
-
-    if (error) {
-      throw error;
+    if (!isAdminInviteRole(originalInvite.role)) {
+      return { error: 'El rol debe ser hr o admin' };
     }
 
-    if (newInvite?.token) {
-      const html = await buildInviteEmailHtml(originalInvite.email, originalInvite.role, newInvite.token);
-      const mailResult = await sendEmail({
-        to: originalInvite.email,
-        subject: 'Invitación al Portal de Empleo Eusse',
-        html,
-      });
+    const inviteOptions = buildSupabaseInviteOptions(SITE_URL, originalInvite.role);
+    const { error: inviteError } = await adminClient.auth.admin.inviteUserByEmail(
+      originalInvite.email,
+      inviteOptions,
+    );
 
-      if (!mailResult.success) {
-        console.error('Failed to resend invite email:', mailResult.error);
-      }
+    if (inviteError) {
+      return { error: inviteError.message };
     }
 
     revalidatePath('/dashboard/configuracion');
