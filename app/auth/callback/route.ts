@@ -83,7 +83,8 @@ export async function GET(request: Request) {
               cookiesToSet.forEach(({ name, value, options }) =>
                 cookieStore.set(name, value, options),
               );
-            } catch {
+            } catch (err) {
+              console.error('[auth/callback] Error setting cookies:', err);
               // Ignorado en Server Components de solo lectura
             }
           },
@@ -102,6 +103,7 @@ export async function GET(request: Request) {
         const shouldCompleteInvite = await hasPendingInvite(user);
 
         if (shouldCompleteInvite) {
+          console.log('[auth/callback] Redirecting to invite registration');
           return NextResponse.redirect(`${origin}${buildInviteRegistrationPath(safePath)}`);
         }
 
@@ -125,8 +127,14 @@ export async function GET(request: Request) {
       }
 
       return NextResponse.redirect(`${origin}/`);
+    } else {
+      console.error('[auth/callback] Error de exchangeCodeForSession:', error);
     }
+  } else {
+    // Para depuración, veamos qué Search Params llegaron
+    console.error('[auth/callback] Entró al callback pero no hay code en Search Params. Request URL:', request.url);
   }
 
+  console.error('[auth/callback] Redirigiendo a /login?error=auth_callback_error');
   return NextResponse.redirect(`${origin}/login?error=auth_callback_error`);
 }
