@@ -3,7 +3,7 @@ import type { UserRole } from "@/types/auth";
 type AdminInviteRole = Extract<UserRole, "hr" | "admin">;
 
 const INTERNAL_INVITE_REDIRECT_PATH = "/dashboard/puestos";
-const INVITE_CALLBACK_PATH = "/auth/callback";
+const INVITE_CALLBACK_PATH = "/auth/invite";
 
 function normalizeSiteUrl(siteUrl: string): string {
   return siteUrl.endsWith("/") ? siteUrl.slice(0, -1) : siteUrl;
