@@ -18,6 +18,14 @@ interface InviteEmailOptions {
   inviteUrl: string;
 }
 
+interface MailgunErrorContext {
+  status: number;
+  apiBaseUrl: string;
+  domain: string;
+  from: string;
+  body: string;
+}
+
 function normalizeApiBaseUrl(value: string): string {
   return value.replace(/\/+$/, "");
 }
@@ -56,6 +64,29 @@ export function resolveMailgunConfig(env: MailgunEnv = process.env) {
   };
 }
 
+export function buildMailgunErrorDetails({ status, apiBaseUrl, domain, from, body }: MailgunErrorContext) {
+  let hint: string | undefined;
+
+  if (status === 401) {
+    hint = "Mailgun devolvio 401 Unauthorized. Revisa MAILGUN_API_KEY.";
+  } else if (status === 403) {
+    hint =
+      `Mailgun devolvio 403 Forbidden. Revisa que la API key pertenezca a la cuenta de Mailgun correcta, ` +
+      `que el dominio ${domain} exista y este verificado en Mailgun, y que el remitente ${from} sea valido para ese dominio.`;
+  } else if (status === 404) {
+    hint = `Mailgun devolvio 404. Revisa MAILGUN_DOMAIN (${domain}) y la base API (${apiBaseUrl}).`;
+  }
+
+  return {
+    status,
+    apiBaseUrl,
+    domain,
+    from,
+    body,
+    hint,
+  };
+}
+
 export async function sendEmail({ to, subject, html }: SendEmailOptions): Promise<{ success: boolean; error?: string }> {
   const config = resolveMailgunConfig();
 
@@ -81,13 +112,13 @@ export async function sendEmail({ to, subject, html }: SendEmailOptions): Promis
 
     if (!response.ok) {
       const text = await response.text();
-      console.error('Mailgun error:', {
+      console.error('Mailgun error:', buildMailgunErrorDetails({
         status: response.status,
         apiBaseUrl: config.apiBaseUrl,
         domain: config.domain,
         from: config.from,
         body: text,
-      });
+      }));
       return { success: false, error: 'Error al enviar el correo' };
     }
 
