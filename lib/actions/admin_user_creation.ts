@@ -22,7 +22,7 @@ export function parseAdminUserCreationForm(
   const role = formData.get("role");
 
   if (!fullName || !email || !password || !role) {
-    return { error: "Nombre, email, contrasena y rol son requeridos" };
+    return { error: "Nombre, email, contraseña y rol son requeridos" };
   }
 
   if (!isManagedAdminRole(role)) {
@@ -30,7 +30,7 @@ export function parseAdminUserCreationForm(
   }
 
   if (password.length < 8) {
-    return { error: "La contrasena debe tener al menos 8 caracteres" };
+    return { error: "La contraseña debe tener al menos 8 caracteres" };
   }
 
   return {

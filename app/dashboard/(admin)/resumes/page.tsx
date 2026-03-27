@@ -10,7 +10,7 @@ export default async function ResumesPage() {
     initialCvs = data || [];
     initialError = error || null;
   } catch {
-    initialError = "Error al cargar los CVs. Intenta recargar la pagina.";
+    initialError = "Error al cargar los CVs. Intenta recargar la página.";
   }
 
   return (

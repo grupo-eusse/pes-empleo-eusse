@@ -312,7 +312,7 @@ export default function JobsPageContent({ isAuthenticated, userRole, jobs, compa
                 href="/aplicar-general"
                 className="inline-flex w-full items-center justify-center rounded-2xl border border-transparent bg-brand-400 px-5 py-3 text-base font-semibold text-brand-50 shadow-[0_25px_60px_rgba(0,0,0,0.2)] transition hover:bg-brand-400/90"
               >
-                Registra tu curriculum
+                Registra tu currículum
               </Link>
             ) : isPostulant && hasGeneralCv === true ? (
               <div className="rounded-2xl border border-transparent bg-brand-800/80 px-5 py-3 text-center text-sm font-semibold text-brand-50 shadow-[0_20px_50px_rgba(0,0,0,0.15)]">
@@ -330,7 +330,7 @@ export default function JobsPageContent({ isAuthenticated, userRole, jobs, compa
                 href="/login?returnUrl=/aplicar-general"
                 className="inline-flex w-full items-center justify-center rounded-2xl border border-transparent bg-brand-400 px-5 py-3 text-base font-semibold text-brand-50 shadow-[0_25px_60px_rgba(0,0,0,0.2)] transition hover:bg-brand-400/90"
               >
-                Iniciar sesión para registrar tu curriculum
+                Iniciar sesión para registrar tu currículum
               </Link>
             )}
           </div>

@@ -19,7 +19,7 @@ export default async function ConfiguracionDashboardPage() {
   if (!profile) {
     return (
       <div className="rounded-3xl border border-transparent bg-white p-8 text-center shadow-[0_25px_70px_rgba(0,0,0,0.06)]">
-        <p className="text-brand-900/70">No se pudo verificar la sesion actual.</p>
+        <p className="text-brand-900/70">No se pudo verificar la sesión actual.</p>
       </div>
     );
   }
@@ -45,7 +45,7 @@ export default async function ConfiguracionDashboardPage() {
   } catch {
     return (
       <div className="rounded-3xl border border-transparent bg-white p-8 shadow-[0_25px_70px_rgba(0,0,0,0.06)] text-center">
-        <p className="text-brand-900/70">Error al cargar la configuracion. Intenta recargar la pagina.</p>
+        <p className="text-brand-900/70">Error al cargar la configuración. Intenta recargar la página.</p>
       </div>
     );
   }

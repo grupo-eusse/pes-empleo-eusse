@@ -21,7 +21,7 @@ export async function GET(request: NextRequest) {
 
   const supabase = await createClient();
   if (!supabase) {
-    return NextResponse.json({ error: "Error de configuracion del servidor" }, { status: 500 });
+    return NextResponse.json({ error: "Error de configuración del servidor" }, { status: 500 });
   }
 
   const since = new Date();

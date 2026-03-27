@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { useState } from 'react';
 import { updatePassword } from '@/lib/actions/auth';
+import PasswordInput from '@/ui/components/password_input';
 
 type Status = 'idle' | 'loading' | 'success' | 'error';
 
@@ -70,33 +71,27 @@ export default function ResetPasswordPage() {
         )}
 
         <form className="mt-8 space-y-4" onSubmit={handleSubmit}>
-          <label className="block text-sm text-brand-900/70">
-            Nueva contraseña
-            <input
-              type="password"
-              required
-              minLength={8}
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="Creá una contraseña de al menos 8 caracteres"
-              disabled={loading}
-              className="mt-1 w-full rounded-2xl border border-transparent bg-brand-50 px-3 py-2 text-brand-900 outline-none focus:ring-2 focus:ring-brand-400/40"
-            />
-          </label>
+          <PasswordInput
+            required
+            minLength={8}
+            label="Nueva contraseña"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            placeholder="Creá una contraseña de al menos 8 caracteres"
+            autoComplete="new-password"
+            disabled={loading}
+          />
 
-          <label className="block text-sm text-brand-900/70">
-            Confirmar contraseña
-            <input
-              type="password"
-              required
-              minLength={8}
-              value={confirm}
-              onChange={(e) => setConfirm(e.target.value)}
-              placeholder="Volvé a escribir tu contraseña"
-              disabled={loading}
-              className="mt-1 w-full rounded-2xl border border-transparent bg-brand-50 px-3 py-2 text-brand-900 outline-none focus:ring-2 focus:ring-brand-400/40"
-            />
-          </label>
+          <PasswordInput
+            required
+            minLength={8}
+            label="Confirmar contraseña"
+            value={confirm}
+            onChange={(e) => setConfirm(e.target.value)}
+            placeholder="Volvé a escribir tu contraseña"
+            autoComplete="new-password"
+            disabled={loading}
+          />
 
           <button
             type="submit"

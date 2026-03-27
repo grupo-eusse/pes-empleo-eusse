@@ -79,7 +79,7 @@ export default function AplicarGeneralPage() {
           </div>
           <h1 className="text-2xl font-bold text-brand-900">¡CV registrado!</h1>
           <p className="mt-3 text-brand-900/70">
-            Tu curriculum ha sido registrado en nuestra base de talentos. Te contactaremos cuando surjan oportunidades que se ajusten a tu perfil.
+            Tu currículum ha sido registrado en nuestra base de talentos. Te contactaremos cuando surjan oportunidades que se ajusten a tu perfil.
           </p>
           <div className="mt-6 flex gap-3 justify-center">
             <Link
@@ -104,7 +104,7 @@ export default function AplicarGeneralPage() {
     <div className="flex flex-1 items-center justify-center bg-brand-50 px-4 py-8 text-brand-900">
       <div className="w-full max-w-2xl rounded-3xl border border-transparent bg-white p-8 shadow-[0_35px_90px_rgba(0,0,0,0.08)]">
         <p className="text-xs uppercase tracking-[0.35em] text-brand-600">Base de talentos</p>
-        <h1 className="mt-3 text-3xl font-bold text-brand-900">Registra tu curriculum general</h1>
+        <h1 className="mt-3 text-3xl font-bold text-brand-900">Registra tu currículum general</h1>
         <p className="mt-2 text-sm text-brand-900/60">
           Sube tu CV para que te consideremos en futuras oportunidades que se ajusten a tu perfil.
         </p>
@@ -179,7 +179,7 @@ export default function AplicarGeneralPage() {
             disabled={loading}
             className="mt-2 w-full rounded-2xl border border-transparent bg-brand-400 px-4 py-3 text-sm font-semibold text-brand-50 shadow-[0_25px_60px_rgba(0,0,0,0.12)] transition hover:-translate-y-0.5 hover:bg-brand-400/90 disabled:cursor-not-allowed disabled:opacity-50"
           >
-            {loading ? 'Subiendo CV…' : 'Registrar curriculum'}
+            {loading ? 'Subiendo CV…' : 'Registrar currículum'}
           </button>
         </form>
 

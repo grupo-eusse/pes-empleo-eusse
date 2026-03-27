@@ -5,6 +5,7 @@ import Image from "next/image";
 import { useState, useTransition } from "react";
 import { login } from "@/lib/actions/auth";
 import { createClient } from "@/lib/supabase/client";
+import PasswordInput from "@/ui/components/password_input";
 
 interface LoginContentProps {
   authError: string | null;
@@ -95,18 +96,14 @@ export default function LoginContent({ authError, returnUrl }: LoginContentProps
               className="mt-1 w-full rounded-2xl border border-transparent bg-brand-50 px-3 py-2 text-brand-900 outline-none focus:ring-2 focus:ring-brand-400/40"
             />
           </label>
-          <label className="block text-sm text-brand-900/70">
-            Contraseña
-            <input
-              required
-              type="password"
-              name="password"
-              placeholder="••••••••"
-              autoComplete="current-password"
-              disabled={isPending}
-              className="mt-1 w-full rounded-2xl border border-transparent bg-brand-50 px-3 py-2 text-brand-900 outline-none focus:ring-2 focus:ring-brand-400/40"
-            />
-          </label>
+          <PasswordInput
+            required
+            label="Contraseña"
+            name="password"
+            placeholder="••••••••"
+            autoComplete="current-password"
+            disabled={isPending}
+          />
           <div className="mb-8 flex items-center justify-between text-sm text-brand-900/70">
             <label className="flex items-center gap-2">
               <input type="checkbox" name="remember" className="h-4 w-4 rounded border-brand-200 text-brand-600 focus:ring-brand-400/40" />

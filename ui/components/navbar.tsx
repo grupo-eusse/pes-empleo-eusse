@@ -16,7 +16,7 @@ interface NavbarUser {
 
 const PUBLIC_LINKS = [
   { href: '/buscar-empleos', label: 'Buscar empleos' },
-  { href: '/quienes-somos', label: 'Quienes somos' },
+  { href: '/quienes-somos', label: 'Quiénes somos' },
   { href: '/faq', label: 'FAQ' },
 ];
 
@@ -130,7 +130,7 @@ export default function Navbar() {
                 prefetch={disablePrefetch ? false : undefined}
                 className="bg-accent text-white font-medium px-4 py-2 rounded-md shadow-sm hover:bg-accent/90 transition-all duration-200"
               >
-                Iniciar sesion
+                Iniciar sesión
               </Link>
             </li>
           ) : (
@@ -154,7 +154,7 @@ export default function Navbar() {
                   disabled={isPending}
                   className="bg-brand-900 text-white font-medium px-4 py-2 rounded-md shadow-sm hover:bg-brand-800 transition-all duration-200 disabled:opacity-50"
                 >
-                  {isPending ? 'Saliendo...' : 'Cerrar sesion'}
+                  {isPending ? 'Saliendo...' : 'Cerrar sesión'}
                 </button>
               </li>
             </>

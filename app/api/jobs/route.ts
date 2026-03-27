@@ -84,13 +84,13 @@ export async function POST(request: NextRequest) {
   try {
     body = await request.json();
   } catch {
-    return NextResponse.json({ error: "Cuerpo de solicitud invalido" }, { status: 400 });
+    return NextResponse.json({ error: "Cuerpo de solicitud inválido" }, { status: 400 });
   }
 
   const { action, payload } = body;
 
   if (!action || typeof action !== "string") {
-    return NextResponse.json({ error: "Accion no especificada" }, { status: 400 });
+    return NextResponse.json({ error: "Acción no especificada" }, { status: 400 });
   }
 
   switch (action) {
@@ -178,6 +178,6 @@ export async function POST(request: NextRequest) {
     }
 
     default:
-      return NextResponse.json({ error: `Accion desconocida: ${action}` }, { status: 400 });
+      return NextResponse.json({ error: `Acción desconocida: ${action}` }, { status: 400 });
   }
 }

@@ -104,7 +104,7 @@ export default async function PostulantDashboard() {
       status_changed_at: app.status_changed_at,
       job: {
         id: job?.id ?? 0,
-        title: job?.title ?? "Sin titulo",
+        title: job?.title ?? "Sin título",
         description: job?.description ?? "",
         company: {
           id: company?.id ?? 0,
@@ -112,7 +112,7 @@ export default async function PostulantDashboard() {
         },
         location: {
           id: location?.id ?? 0,
-          name: location?.name ?? "Sin ubicacion",
+          name: location?.name ?? "Sin ubicación",
         },
       },
       cv: {

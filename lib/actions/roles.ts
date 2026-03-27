@@ -44,7 +44,7 @@ const handleSupabaseError = (error: unknown, context: string): ActionResult => {
 const validateSupabaseClient = async (): Promise<SupabaseClient> => {
   const supabase = await createClient();
   if (!supabase) {
-    throw new Error('Error de configuracion del servidor');
+    throw new Error('Error de configuración del servidor');
   }
 
   return supabase;
@@ -124,7 +124,7 @@ export async function createAdminUser(formData: FormData): Promise<ActionResult>
 
     const authUser = createdUser.user;
     if (!authUser) {
-      return { error: 'No se pudo crear el usuario en autenticacion' };
+      return { error: 'No se pudo crear el usuario en autenticación' };
     }
 
     const { data: existingProfile, error: existingProfileError } = await adminClient
@@ -189,7 +189,7 @@ export async function updateUserRole(userId: string, newRole: UserRole): Promise
     const supabase = await validateSupabaseClient();
 
     if (!['hr', 'admin', 'postulant'].includes(newRole)) {
-      return { error: 'Rol invalido' };
+      return { error: 'Rol inválido' };
     }
 
     const { error } = await supabase

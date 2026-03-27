@@ -392,7 +392,7 @@ export default function AplicarJobContent({ job, userName, userEmail }: Props) {
 
             {/* CV Upload */}
             <fieldset className="space-y-4">
-              <legend className="text-sm font-semibold text-brand-900/80">Curriculum Vitae</legend>
+              <legend className="text-sm font-semibold text-brand-900/80">Currículum vítae</legend>
               <label className="flex items-center gap-3 text-sm text-brand-900/70">
                 <input type="checkbox" checked={useGeneralCV} onChange={e => setUseGeneralCV(e.target.checked)} disabled={loading}
                   className="h-4 w-4 rounded border-brand-200 text-brand-600 focus:ring-brand-400/40" />

@@ -8,6 +8,7 @@ import {
   toggleUserStatus,
   type UserProfileData,
 } from "@/lib/actions/roles";
+import PasswordInput from "@/ui/components/password_input";
 
 interface RolesTabProps {
   users: UserProfileData[];
@@ -131,18 +132,15 @@ export default function RolesTab({
               className="mt-1 w-full rounded-2xl border border-transparent bg-brand-50 px-3 py-2 text-brand-900 outline-none focus:ring-2 focus:ring-brand-400/40 disabled:opacity-50"
             />
           </label>
-          <label className="text-sm text-brand-900/70">
-            Contrasena
-            <input
-              required
-              type="password"
-              minLength={8}
-              value={form.password}
-              onChange={(e) => setForm((prev) => ({ ...prev, password: e.target.value }))}
-              disabled={isPending}
-              className="mt-1 w-full rounded-2xl border border-transparent bg-brand-50 px-3 py-2 text-brand-900 outline-none focus:ring-2 focus:ring-brand-400/40 disabled:opacity-50"
-            />
-          </label>
+          <PasswordInput
+            required
+            minLength={8}
+            label="Contraseña"
+            value={form.password}
+            onChange={(e) => setForm((prev) => ({ ...prev, password: e.target.value }))}
+            autoComplete="new-password"
+            disabled={isPending}
+          />
           <label className="text-sm text-brand-900/70">
             Rol
             <select
