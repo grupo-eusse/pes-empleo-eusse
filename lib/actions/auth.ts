@@ -3,6 +3,9 @@
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
+import { createAdminClient } from '@/lib/supabase/admin';
+import { getInvitedAdminRole } from '@/lib/invite_utils';
+import { getPostInviteRedirect } from '@/lib/invite_registration_utils';
 import type { UserRole } from '@/types/auth';
 
 export interface AuthResult {
@@ -110,6 +113,109 @@ export async function updatePassword(newPassword: string): Promise<AuthResult> {
 
   const { error } = await supabase.auth.updateUser({ password: newPassword });
   return error ? { error: error.message } : { success: true };
+}
+
+export async function completeInviteRegistration(formData: FormData): Promise<AuthResult> {
+  const fullName = formData.get('fullName') as string;
+  const password = formData.get('password') as string;
+  const confirmPassword = formData.get('confirmPassword') as string;
+  const next = formData.get('next') as string | null;
+
+  if (!fullName?.trim() || !password || !confirmPassword) {
+    return { error: 'Todos los campos son requeridos' };
+  }
+
+  if (password.length < 8) {
+    return { error: 'La contrasena debe tener al menos 8 caracteres' };
+  }
+
+  if (password !== confirmPassword) {
+    return { error: 'Las contrasenas no coinciden' };
+  }
+
+  let supabase;
+  try { supabase = await getSupabase(); } catch (e: unknown) { return { error: (e as Error).message }; }
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user || !user.email) {
+    return { error: 'Sesion invalida para completar la invitacion' };
+  }
+
+  const invitedRole = getInvitedAdminRole(user.user_metadata);
+  if (!invitedRole) {
+    return { error: 'Esta sesion no corresponde a una invitacion pendiente' };
+  }
+
+  const adminClient = createAdminClient();
+  const inviteLookup = adminClient ?? supabase;
+  const { data: pendingInvite, error: inviteFetchError } = await inviteLookup
+    .from('user_invite')
+    .select('id')
+    .eq('email', user.email)
+    .eq('role', invitedRole)
+    .is('accepted_at', null)
+    .maybeSingle();
+
+  if (inviteFetchError) {
+    return { error: inviteFetchError.message };
+  }
+
+  if (!pendingInvite) {
+    return { error: 'La invitacion ya fue completada o no existe' };
+  }
+
+  const trimmedName = fullName.trim();
+  const { error: updateUserError } = await supabase.auth.updateUser({
+    password,
+    data: {
+      ...(user.user_metadata ?? {}),
+      full_name: trimmedName,
+    },
+  });
+
+  if (updateUserError) {
+    return { error: updateUserError.message };
+  }
+
+  const { error: profileError } = await supabase
+    .from('user_profile')
+    .update({ name: trimmedName, user_role: invitedRole, is_active: true })
+    .eq('supabase_id', user.id);
+
+  if (profileError) {
+    return { error: profileError.message };
+  }
+
+  if (adminClient) {
+    const { error: inviteUpdateError } = await adminClient
+      .from('user_invite')
+      .update({ accepted_at: new Date().toISOString() })
+      .eq('email', user.email)
+      .eq('role', invitedRole)
+      .is('accepted_at', null);
+
+    if (inviteUpdateError) {
+      return { error: inviteUpdateError.message };
+    }
+  } else {
+    const { error: inviteUpdateError } = await supabase
+      .from('user_invite')
+      .update({ accepted_at: new Date().toISOString() })
+      .eq('email', user.email)
+      .eq('role', invitedRole)
+      .is('accepted_at', null);
+
+    if (inviteUpdateError) {
+      return { error: inviteUpdateError.message };
+    }
+  }
+
+  revalidatePath('/', 'layout');
+  revalidatePath('/dashboard/configuracion');
+  redirect(getPostInviteRedirect(invitedRole, next));
 }
 
 export async function loginWithGoogle(): Promise<{ url: string } | AuthResult> {

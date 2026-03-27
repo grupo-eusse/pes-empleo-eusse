@@ -4,7 +4,9 @@ import { revalidatePath } from 'next/cache';
 import { createClient } from '@/lib/supabase/server';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { mapAdminProfilesWithEmails, type AdminProfileRecord } from '@/lib/actions/role_user_mappers';
-import { buildSupabaseInviteOptions, isAdminInviteRole } from '@/lib/invite_utils';
+import { isAdminInviteRole } from '@/lib/invite_utils';
+import { sendAdminInvite } from '@/lib/invite_delivery';
+import { sendEmail } from '@/lib/mail';
 import type { UserRole } from '@/types/auth';
 
 export interface ActionResult {
@@ -203,14 +205,19 @@ export async function createInvite(formData: FormData): Promise<ActionResult> {
       throw error;
     }
 
-    const inviteOptions = buildSupabaseInviteOptions(SITE_URL, role);
-    const { error: inviteError } = await adminClient.auth.admin.inviteUserByEmail(email, inviteOptions);
+    const inviteResult = await sendAdminInvite({
+      adminClient,
+      email,
+      role,
+      siteUrl: SITE_URL,
+      mailer: sendEmail,
+    });
 
-    if (inviteError) {
+    if (inviteResult.error) {
       if (inserted?.id) {
         await supabase.from('user_invite').delete().eq('id', inserted.id);
       }
-      return { error: inviteError.message };
+      return { error: inviteResult.error };
     }
 
     revalidatePath('/dashboard/configuracion');
@@ -307,14 +314,16 @@ export async function resendInvite(inviteId: string): Promise<ActionResult> {
       return { error: 'El rol debe ser hr o admin' };
     }
 
-    const inviteOptions = buildSupabaseInviteOptions(SITE_URL, originalInvite.role);
-    const { error: inviteError } = await adminClient.auth.admin.inviteUserByEmail(
-      originalInvite.email,
-      inviteOptions,
-    );
+    const inviteResult = await sendAdminInvite({
+      adminClient,
+      email: originalInvite.email,
+      role: originalInvite.role,
+      siteUrl: SITE_URL,
+      mailer: sendEmail,
+    });
 
-    if (inviteError) {
-      return { error: inviteError.message };
+    if (inviteResult.error) {
+      return { error: inviteResult.error };
     }
 
     revalidatePath('/dashboard/configuracion');

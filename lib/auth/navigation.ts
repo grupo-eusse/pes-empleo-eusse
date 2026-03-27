@@ -7,6 +7,7 @@ export const PUBLIC_ROUTES = [
   "/faq",
   "/login",
   "/registro",
+  "/registro-invitacion",
   "/recuperar",
 ] as const;
 

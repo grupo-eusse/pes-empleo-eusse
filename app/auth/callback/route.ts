@@ -3,6 +3,7 @@ import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { getInvitedAdminRole } from '@/lib/invite_utils';
+import { buildInviteRegistrationPath, getSafeInternalPath } from '@/lib/invite_registration_utils';
 import type { UserRole } from '@/types/auth';
 
 const ROLE_REDIRECT: Record<UserRole, string> = {
@@ -33,20 +34,33 @@ async function syncInvitedUserRole(user: { id: string; email?: string | null; us
     console.error('Error syncing invited role:', profileError);
   }
 
-  if (!user.email) {
-    return;
+}
+
+async function hasPendingInvite(user: { email?: string | null; user_metadata?: unknown }) {
+  const invitedRole = getInvitedAdminRole(user.user_metadata);
+  if (!invitedRole || !user.email) {
+    return false;
   }
 
-  const { error: inviteError } = await adminClient
+  const adminClient = createAdminClient();
+  if (!adminClient) {
+    return false;
+  }
+
+  const { data, error } = await adminClient
     .from('user_invite')
-    .update({ accepted_at: new Date().toISOString() })
+    .select('id')
     .eq('email', user.email)
     .eq('role', invitedRole)
-    .is('accepted_at', null);
+    .is('accepted_at', null)
+    .maybeSingle();
 
-  if (inviteError) {
-    console.error('Error marking invite as accepted:', inviteError);
+  if (error) {
+    console.error('Error checking pending invite:', error);
+    return false;
   }
+
+  return Boolean(data);
 }
 
 export async function GET(request: Request) {
@@ -54,7 +68,7 @@ export async function GET(request: Request) {
   const code = searchParams.get('code');
   const next = searchParams.get('next');
 
-  const safePath = next && next.startsWith('/') && !next.startsWith('//') ? next : null;
+  const safePath = getSafeInternalPath(next);
 
   if (code) {
     const cookieStore = await cookies();
@@ -85,6 +99,11 @@ export async function GET(request: Request) {
 
       if (user) {
         await syncInvitedUserRole(user);
+        const shouldCompleteInvite = await hasPendingInvite(user);
+
+        if (shouldCompleteInvite) {
+          return NextResponse.redirect(`${origin}${buildInviteRegistrationPath(safePath)}`);
+        }
 
         const { data: profile } = await supabase
           .from('user_profile')

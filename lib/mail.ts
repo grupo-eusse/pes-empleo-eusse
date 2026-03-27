@@ -1,5 +1,3 @@
-'use server';
-
 const MAILGUN_API_KEY = process.env.MAILGUN_API_KEY ?? '';
 const MAILGUN_DOMAIN = process.env.MAILGUN_DOMAIN ?? '';
 const MAILGUN_FROM = process.env.MAILGUN_FROM ?? `Portal Empleo Eusse <no-reply@${MAILGUN_DOMAIN}>`;
@@ -9,6 +7,11 @@ interface SendEmailOptions {
   to: string;
   subject: string;
   html: string;
+}
+
+interface InviteEmailOptions {
+  role: string;
+  inviteUrl: string;
 }
 
 export async function sendEmail({ to, subject, html }: SendEmailOptions): Promise<{ success: boolean; error?: string }> {
@@ -45,8 +48,12 @@ export async function sendEmail({ to, subject, html }: SendEmailOptions): Promis
   }
 }
 
-export async function buildInviteEmailHtml(email: string, role: string, token: string): Promise<string> {
-  const inviteUrl = `${SITE_URL}/registro?invite=${encodeURIComponent(token)}`;
+export function buildInviteEmailSubject(role: string): string {
+  const roleName = role === 'admin' ? 'Administrador' : 'RRHH';
+  return `Invitacion al equipo ${roleName}`;
+}
+
+export async function buildInviteEmailHtml({ role, inviteUrl }: InviteEmailOptions): Promise<string> {
   const roleName = role === 'admin' ? 'Administrador' : 'Recursos Humanos';
 
   return `
