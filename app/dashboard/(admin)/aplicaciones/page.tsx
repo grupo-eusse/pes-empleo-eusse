@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState, useTransition } from "react";
+import { useCallback, useEffect, useState } from "react";
 import ApplicationCardReal, { ApplicationDetailsModal } from "@/ui/components/aplicaction_card";
 import CVPreviewModal from "@/ui/components/jobs/cv_preview_modal";
 import {
@@ -8,6 +8,12 @@ import {
   type ApplicationData,
   getApplicationById,
 } from "@/lib/actions/applications";
+import {
+  updateApplicationNotesInList,
+  updateApplicationNotesInRecord,
+  updateApplicationStatusInList,
+  updateApplicationStatusInRecord,
+} from "@/lib/application_collection";
 import { APPLICATION_STATUS_MAP, type ApplicationStatus } from "@/lib/constants";
 import { Skeleton } from "@/ui/components/skeleton";
 
@@ -69,11 +75,11 @@ function ApplicationsSkeleton() {
 export default function ApplicationsPage() {
   const [applications, setApplications] = useState<ApplicationData[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [search, setSearch] = useState("");
   const [status, setStatus] = useState<ApplicationStatus | "all">("all");
   const [selectedAppSummary, setSelectedAppSummary] = useState<ApplicationData | null>(null);
-  const [isPending, startTransition] = useTransition();
   const [page, setPage] = useState(1);
   const [total, setTotal] = useState(0);
   const [refreshKey, setRefreshKey] = useState(0);
@@ -106,6 +112,7 @@ export default function ApplicationsPage() {
     let cancelled = false;
 
     const run = async () => {
+      setIsRefreshing(true);
       const result = await getApplications({
         limit: PAGE_SIZE,
         offset: (page - 1) * PAGE_SIZE,
@@ -128,6 +135,7 @@ export default function ApplicationsPage() {
       }
 
       setIsLoading(false);
+      setIsRefreshing(false);
     };
 
     void run();
@@ -137,11 +145,29 @@ export default function ApplicationsPage() {
     };
   }, [page, refreshKey, search, status]);
 
+  const handleStatusUpdated = useCallback(
+    (appId: number, nextStatus: ApplicationStatus, statusChangedAt: string) => {
+      setApplications((current) =>
+        updateApplicationStatusInList(current, appId, nextStatus, statusChangedAt)
+      );
+      setSelectedAppSummary((current) =>
+        updateApplicationStatusInRecord(current, appId, nextStatus, statusChangedAt)
+      );
+      setSelectedAppDetail((current) =>
+        updateApplicationStatusInRecord(current, appId, nextStatus, statusChangedAt)
+      );
+    },
+    []
+  );
+
+  const handleNotesUpdated = useCallback((appId: number, notes: ApplicationData["notes"] = []) => {
+    setApplications((current) => updateApplicationNotesInList(current, appId, notes));
+    setSelectedAppSummary((current) => updateApplicationNotesInRecord(current, appId, notes));
+    setSelectedAppDetail((current) => updateApplicationNotesInRecord(current, appId, notes));
+  }, []);
+
   const handleRefresh = () => {
-    setIsLoading(true);
-    startTransition(() => {
-      setRefreshKey((current) => current + 1);
-    });
+    setRefreshKey((current) => current + 1);
     const selectedId = selectedAppDetail?.id ?? selectedAppSummary?.id;
     if (selectedId) {
       void fetchApplicationDetails(selectedId);
@@ -185,7 +211,6 @@ export default function ApplicationsPage() {
             <input
               value={search}
               onChange={(e) => {
-                setIsLoading(true);
                 setSearch(e.target.value);
                 setPage(1);
               }}
@@ -196,7 +221,6 @@ export default function ApplicationsPage() {
           <select
             value={status}
             onChange={(e) => {
-              setIsLoading(true);
               setStatus(e.target.value as ApplicationStatus | "all");
               setPage(1);
             }}
@@ -211,10 +235,10 @@ export default function ApplicationsPage() {
           </select>
           <button
             onClick={handleRefresh}
-            disabled={isPending}
+            disabled={isRefreshing}
             className="rounded-2xl bg-brand-400 px-4 py-2 text-sm font-semibold text-white disabled:opacity-50"
           >
-            {isPending ? "Actualizando..." : "Actualizar"}
+            {isRefreshing ? "Actualizando..." : "Actualizar"}
           </button>
         </div>
         <div className="mt-4 flex flex-wrap gap-3 text-xs text-brand-900/70">
@@ -240,7 +264,7 @@ export default function ApplicationsPage() {
             key={app.id}
             app={app}
             onPreview={onPreview}
-            onRefresh={handleRefresh}
+            onStatusUpdated={handleStatusUpdated}
             onOpenDetails={handleOpenDetails}
           />
         ))}
@@ -262,10 +286,9 @@ export default function ApplicationsPage() {
               if (!canPrev) {
                 return;
               }
-              setIsLoading(true);
               setPage((p) => Math.max(1, p - 1));
             }}
-            disabled={!canPrev}
+            disabled={!canPrev || isRefreshing}
             className="rounded-xl border border-brand-200 bg-brand-50 px-3 py-1 disabled:opacity-50"
           >
             Anterior
@@ -275,10 +298,9 @@ export default function ApplicationsPage() {
               if (!canNext) {
                 return;
               }
-              setIsLoading(true);
               setPage((p) => p + 1);
             }}
-            disabled={!canNext}
+            disabled={!canNext || isRefreshing}
             className="rounded-xl border border-brand-200 bg-brand-50 px-3 py-1 disabled:opacity-50"
           >
             Siguiente
@@ -307,7 +329,8 @@ export default function ApplicationsPage() {
           setDetailsError(null);
           setIsLoadingDetails(false);
         }}
-        onRefresh={handleRefresh}
+        onStatusUpdated={handleStatusUpdated}
+        onNotesUpdated={handleNotesUpdated}
         currentUserProfileId={currentUserProfileId}
         isLoading={isLoadingDetails}
         error={detailsError}

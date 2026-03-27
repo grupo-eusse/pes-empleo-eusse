@@ -30,7 +30,7 @@ const SELECT_OPTIONS: ApplicationStatus[] = ["received", "in_review", "contacted
 function useApplicationStatus(
   appId: number,
   currentStatus: ApplicationStatus,
-  onSuccess: () => void
+  onSuccess: (nextStatus: ApplicationStatus, statusChangedAt: string) => void
 ) {
   const [localStatus, setLocalStatus] = useState<ApplicationStatus>(currentStatus);
   const [isPending, startTransition] = useTransition();
@@ -43,7 +43,10 @@ function useApplicationStatus(
         setLocalStatus(currentStatus);
         alert(result.error);
       } else {
-        onSuccess();
+        onSuccess(
+          result.data?.status ?? newStatus,
+          result.data?.status_changed_at ?? new Date().toISOString()
+        );
       }
     });
   };
@@ -129,10 +132,12 @@ function NotesThread({
   notes,
   applicationId,
   currentUserProfileId,
+  onNotesUpdated,
 }: {
   notes: ApplicationNoteData[];
   applicationId: number;
   currentUserProfileId: string;
+  onNotesUpdated: (applicationId: number, notes: ApplicationNoteData[]) => void;
 }) {
   const [localNotes, setLocalNotes] = useState(notes);
   const [newNote, setNewNote] = useState("");
@@ -156,7 +161,11 @@ function NotesThread({
 
       const addedNote = result.data;
       if (addedNote) {
-        setLocalNotes((current) => insertNoteIntoTree(current, addedNote));
+        setLocalNotes((current) => {
+          const nextNotes = insertNoteIntoTree(current, addedNote);
+          onNotesUpdated(applicationId, nextNotes);
+          return nextNotes;
+        });
       }
 
       setNewNote("");
@@ -173,7 +182,11 @@ function NotesThread({
         return;
       }
 
-      setLocalNotes((current) => removeNoteFromTree(current, noteId));
+      setLocalNotes((current) => {
+        const nextNotes = removeNoteFromTree(current, noteId);
+        onNotesUpdated(applicationId, nextNotes);
+        return nextNotes;
+      });
     });
   };
 
@@ -257,20 +270,20 @@ function QuestionsAnswers({ answers }: { answers: AnswerData[] }) {
 interface ApplicationCardProps {
   app: ApplicationData;
   onPreview: (id: string, cvId: number, mimeType: string) => void;
-  onRefresh: () => void;
+  onStatusUpdated: (appId: number, status: ApplicationStatus, statusChangedAt: string) => void;
   onOpenDetails: (app: ApplicationData) => void;
 }
 
 export default function ApplicationCard({
   app,
   onPreview,
-  onRefresh,
+  onStatusUpdated,
   onOpenDetails,
 }: ApplicationCardProps) {
   const { localStatus, isPending, handleStatusChange } = useApplicationStatus(
     app.id,
     app.status,
-    onRefresh
+    (nextStatus, statusChangedAt) => onStatusUpdated(app.id, nextStatus, statusChangedAt)
   );
 
   return (
@@ -408,7 +421,8 @@ export function ApplicationDetailsModal({
   app,
   isOpen,
   onClose,
-  onRefresh,
+  onStatusUpdated,
+  onNotesUpdated,
   currentUserProfileId,
   isLoading = false,
   error,
@@ -416,7 +430,8 @@ export function ApplicationDetailsModal({
   app: ApplicationData | null;
   isOpen: boolean;
   onClose: () => void;
-  onRefresh: () => void;
+  onStatusUpdated: (appId: number, status: ApplicationStatus, statusChangedAt: string) => void;
+  onNotesUpdated: (appId: number, notes: ApplicationNoteData[]) => void;
   currentUserProfileId: string;
   isLoading?: boolean;
   error?: string | null;
@@ -424,7 +439,11 @@ export function ApplicationDetailsModal({
   const { localStatus, setLocalStatus, isPending, handleStatusChange } = useApplicationStatus(
     app?.id ?? 0,
     app?.status ?? 'received',
-    onRefresh
+    (nextStatus, statusChangedAt) => {
+      if (app?.id) {
+        onStatusUpdated(app.id, nextStatus, statusChangedAt);
+      }
+    }
   );
 
   useEffect(() => {
@@ -590,6 +609,7 @@ export function ApplicationDetailsModal({
                 notes={app.notes || []}
                 applicationId={app.id}
                 currentUserProfileId={currentUserProfileId}
+                onNotesUpdated={onNotesUpdated}
               />
             )}
           </section>

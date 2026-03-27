@@ -11,6 +11,12 @@ export interface ActionResult {
   success?: boolean;
 }
 
+export interface ApplicationStatusUpdateData {
+  status: ApplicationStatus;
+  status_changed_at: string;
+  updated_at: string | null;
+}
+
 export interface CandidateProfile {
   id: string;
   name: string;
@@ -249,21 +255,24 @@ export async function getApplicationById(appId: number): Promise<{ data: Applica
 export async function updateApplicationStatus(
   appId: number,
   status: ApplicationStatus
-): Promise<ActionResult> {
+): Promise<ActionResult & { data?: ApplicationStatusUpdateData }> {
   const supabase = await createClient();
 
   if (!supabase) {
     return { error: 'Error de configuración del servidor' };
   }
 
-  const { error } = await supabase
+  const changedAt = new Date().toISOString();
+  const { data, error } = await supabase
     .from('job_application')
     .update({
       status,
-      updated_at: new Date().toISOString(),
-      status_changed_at: new Date().toISOString(),
+      updated_at: changedAt,
+      status_changed_at: changedAt,
     })
-    .eq('id', appId);
+    .eq('id', appId)
+    .select('status, status_changed_at, updated_at')
+    .single();
 
   if (error) {
     console.error('Error updating application status:', error);
@@ -271,7 +280,14 @@ export async function updateApplicationStatus(
   }
 
   revalidatePath('/dashboard/aplicaciones');
-  return { success: true };
+  return {
+    success: true,
+    data: (data as ApplicationStatusUpdateData | null) ?? {
+      status,
+      status_changed_at: changedAt,
+      updated_at: changedAt,
+    },
+  };
 }
 
 /**
