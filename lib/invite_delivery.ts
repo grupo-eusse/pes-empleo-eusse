@@ -52,6 +52,7 @@ function isAdminInviteRole(role: unknown): role is "hr" | "admin" {
 
 function buildSupabaseInviteOptions(siteUrl: string, role: "hr" | "admin") {
   const redirectUrl = new URL(`${normalizeSiteUrl(siteUrl)}/auth/invite`);      
+  redirectUrl.searchParams.set("next", "/dashboard/puestos");
 
   return {
     data: {
