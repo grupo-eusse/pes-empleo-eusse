@@ -4,14 +4,15 @@ import { useEffect, useMemo, useState, useTransition } from "react";
 import clsx from "clsx";
 import type {
   ApplicationData,
-  ApplicationNoteData,
   AnswerData,
 } from "@/lib/actions/applications";
+import type { ApplicationNoteData } from "@/lib/application_note_types";
 import {
   updateApplicationStatus,
   addApplicationNote,
   deleteApplicationNote,
 } from "@/lib/actions/applications";
+import { insertNoteIntoTree, removeNoteFromTree } from "@/lib/application_notes";
 import { APPLICATION_STATUS_MAP, type ApplicationStatus } from "@/lib/constants";
 import { PROVINCES, CANTONS } from "@/lib/locations";
 import { Skeleton } from "@/ui/components/skeleton";
@@ -127,17 +128,20 @@ function NoteItem({
 function NotesThread({
   notes,
   applicationId,
-  onNoteAdded,
   currentUserProfileId,
 }: {
   notes: ApplicationNoteData[];
   applicationId: number;
-  onNoteAdded: () => void;
   currentUserProfileId: string;
 }) {
+  const [localNotes, setLocalNotes] = useState(notes);
   const [newNote, setNewNote] = useState("");
   const [replyingTo, setReplyingTo] = useState<number | null>(null);
   const [isPending, startTransition] = useTransition();
+
+  useEffect(() => {
+    setLocalNotes(notes);
+  }, [notes]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -145,29 +149,41 @@ function NotesThread({
 
     startTransition(async () => {
       const result = await addApplicationNote(applicationId, newNote.trim(), replyingTo || undefined);
-      if (!result.error) {
-        setNewNote("");
-        setReplyingTo(null);
-        onNoteAdded();
+      if (result.error) {
+        alert(result.error);
+        return;
       }
+
+      const addedNote = result.data;
+      if (addedNote) {
+        setLocalNotes((current) => insertNoteIntoTree(current, addedNote));
+      }
+
+      setNewNote("");
+      setReplyingTo(null);
     });
   };
 
   const handleDelete = async (noteId: number) => {
     if (!confirm("¿Eliminar esta nota?")) return;
     startTransition(async () => {
-      await deleteApplicationNote(noteId);
-      onNoteAdded();
+      const result = await deleteApplicationNote(noteId);
+      if (result.error) {
+        alert(result.error);
+        return;
+      }
+
+      setLocalNotes((current) => removeNoteFromTree(current, noteId));
     });
   };
 
   return (
     <div className="space-y-4">
-      <h4 className="text-sm font-semibold text-brand-900">Notas internas ({notes.length})</h4>
+      <h4 className="text-sm font-semibold text-brand-900">Notas internas ({localNotes.length})</h4>
 
-      {notes.length > 0 ? (
+      {localNotes.length > 0 ? (
         <div className="space-y-3 max-h-64 overflow-y-auto">
-          {notes.map((note) => (
+          {localNotes.map((note) => (
             <NoteItem
               key={note.id}
               note={note}
@@ -243,7 +259,6 @@ interface ApplicationCardProps {
   onPreview: (id: string, cvId: number, mimeType: string) => void;
   onRefresh: () => void;
   onOpenDetails: (app: ApplicationData) => void;
-  currentUserProfileId: string;
 }
 
 export default function ApplicationCard({
@@ -251,7 +266,6 @@ export default function ApplicationCard({
   onPreview,
   onRefresh,
   onOpenDetails,
-  currentUserProfileId,
 }: ApplicationCardProps) {
   const { localStatus, isPending, handleStatusChange } = useApplicationStatus(
     app.id,
@@ -415,7 +429,7 @@ export function ApplicationDetailsModal({
 
   useEffect(() => {
     if (app) setLocalStatus(app.status);
-  }, [app?.id, app?.status]);
+  }, [app, setLocalStatus]);
 
   const provinceName = useMemo(() => getProvinceName(app?.residence_province_code), [app?.residence_province_code]);
   const cantonName = useMemo(() => getCantonName(app?.residence_canton_code), [app?.residence_canton_code]);
@@ -575,7 +589,6 @@ export function ApplicationDetailsModal({
               <NotesThread
                 notes={app.notes || []}
                 applicationId={app.id}
-                onNoteAdded={onRefresh}
                 currentUserProfileId={currentUserProfileId}
               />
             )}

@@ -68,7 +68,7 @@ export default function AplicarJobContent({ job, userName, userEmail }: Props) {
   const [answers, setAnswers] = useState<Record<number, string>>({});
 
   const questions = job.questions ?? [];
-  const cantons = provinceCode ? (CANTONS[parseInt(provinceCode)] ?? []) : [];
+  const provinceCantons = provinceCode ? (CANTONS[parseInt(provinceCode)] ?? []) : [];
   const loading = status === 'loading' || isPending;
 
   const addEducation = () => setEducation([...education, { institutionName: '', degreeLevel: '', fieldOfStudy: '', startDate: '', endDate: '', isInProgress: false }]);
@@ -266,7 +266,7 @@ export default function AplicarJobContent({ job, userName, userEmail }: Props) {
                   <select required value={cantonCode} onChange={e => setCantonCode(e.target.value)} disabled={loading || !provinceCode}
                     className="mt-1 w-full rounded-2xl border border-transparent bg-brand-50 px-3 py-2 text-brand-900 outline-none focus:ring-2 focus:ring-brand-400/40">
                     <option value="">Selecciona</option>
-                    {cantons.map(c => <option key={c.code} value={c.code}>{c.name}</option>)}
+                    {provinceCantons.map(c => <option key={c.code} value={c.code}>{c.name}</option>)}
                   </select>
                 </label>
               </div>

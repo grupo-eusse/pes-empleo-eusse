@@ -242,7 +242,6 @@ export default function ApplicationsPage() {
             onPreview={onPreview}
             onRefresh={handleRefresh}
             onOpenDetails={handleOpenDetails}
-            currentUserProfileId={currentUserProfileId}
           />
         ))}
         {applications.length === 0 && (

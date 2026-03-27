@@ -3,6 +3,8 @@
 import { revalidatePath } from 'next/cache';
 import { createClient } from '@/lib/supabase/server';
 import type { ApplicationStatus } from '@/lib/constants';
+import type { ApplicationNoteData } from '@/lib/application_note_types';
+import { buildNoteTree } from '@/lib/application_notes';
 
 export interface ActionResult {
   error?: string;
@@ -14,20 +16,6 @@ export interface CandidateProfile {
   name: string;
   supabase_id: string;
   email?: string;
-}
-
-export interface ApplicationNoteData {
-  id: number;
-  application_id: number;
-  author_id: string;
-  reply_to_id: number | null;
-  body: string;
-  created_at: string;
-  author?: {
-    id: string;
-    name: string;
-  };
-  replies?: ApplicationNoteData[];
 }
 
 export interface AnswerData {
@@ -106,21 +94,6 @@ export interface ApplicationData {
 // ─── Private helpers ─────────────────────────────────────────────────────────
 
 type SupabaseClient = NonNullable<Awaited<ReturnType<typeof createClient>>>;
-
-function buildNoteTree(rawNotes: ApplicationNoteData[]): ApplicationNoteData[] {
-  const map = new Map<number, ApplicationNoteData>();
-  rawNotes.forEach((n) => map.set(n.id, { ...n, replies: [] }));
-  const roots: ApplicationNoteData[] = [];
-  rawNotes.forEach((n) => {
-    const node = map.get(n.id)!;
-    if (n.reply_to_id && map.has(n.reply_to_id)) {
-      map.get(n.reply_to_id)!.replies!.push(node);
-    } else {
-      roots.push(node);
-    }
-  });
-  return roots;
-}
 
 async function fetchApplicationExtraDetails(
   supabase: SupabaseClient,
