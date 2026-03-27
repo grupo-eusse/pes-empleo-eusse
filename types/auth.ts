@@ -51,6 +51,7 @@ export function isPublicRoute(pathname: string): boolean {
   
   // Ruta de callback de auth
   if (pathname.startsWith('/auth/callback')) return true;
+  if (pathname.startsWith('/auth/invite')) return true;
   
   return false;
 }

@@ -37,6 +37,7 @@ export function isPublicRoute(pathname: string): boolean {
   if (pathname.startsWith("/aplicar/")) return true;
   if (pathname.startsWith("/aplicar-general")) return true;
   if (pathname.startsWith("/auth/callback")) return true;
+  if (pathname.startsWith("/auth/invite")) return true;
 
   return false;
 }
