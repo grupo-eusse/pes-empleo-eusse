@@ -132,14 +132,34 @@ export async function GET(request: Request) {
     }
   } else {
     // Puede llegar aquí con tokens en hash (#access_token), que el servidor no puede leer.
-    // Reenviamos a /auth/invite para que el cliente procese esos tokens.
-    const inviteRedirect = new URL(`${origin}/auth/invite`);
-    if (safePath) {
-      inviteRedirect.searchParams.set('next', safePath);
-    }
+    // Entregamos una página mínima para reenviar en cliente preservando hash.
+    console.error('[auth/callback] Entró sin code. Handoff cliente hacia /auth/invite preservando hash. Request URL:', request.url);
 
-    console.error('[auth/callback] Entró sin code, redirigiendo a /auth/invite para procesamiento cliente. Request URL:', request.url);
-    return NextResponse.redirect(inviteRedirect.toString());
+    const nextParam = safePath ? `?next=${encodeURIComponent(safePath)}` : '';
+    const handoffHtml = `<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Procesando invitacion</title>
+  </head>
+  <body>
+    <script>
+      (function () {
+        var target = '/auth/invite${nextParam}' + (window.location.hash || '');
+        window.location.replace(target);
+      })();
+    </script>
+    <p>Procesando invitacion...</p>
+  </body>
+</html>`;
+
+    return new Response(handoffHtml, {
+      headers: {
+        'content-type': 'text/html; charset=utf-8',
+        'cache-control': 'no-store',
+      },
+    });
   }
 
   console.error('[auth/callback] Redirigiendo a /login?error=auth_callback_error');

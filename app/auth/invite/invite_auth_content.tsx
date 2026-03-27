@@ -37,6 +37,13 @@ export default function InviteAuthContent({ nextPath }: InviteAuthContentProps) 
     const supabase = createClient();
     let isResolved = false;
 
+    console.log("[auth/invite] mounted", {
+      pathname: window.location.pathname,
+      search: window.location.search,
+      hasHash: Boolean(window.location.hash),
+      hashPreview: window.location.hash.slice(0, 80),
+    });
+
     const redirectToOutcome = (outcome: ReturnType<typeof getInviteAuthOutcome>) => {
       if (isResolved) {
         return;
@@ -66,12 +73,20 @@ export default function InviteAuthContent({ nextPath }: InviteAuthContentProps) 
       // Sí hay un token en la URL, estamos procesando un nuevo login desde el enlace de invitación.
       // Debemos ignorar cualquier sesión previa de otra cuenta que pudiera estar activa.
       if (hasHashToken) {
+        console.log("[auth/invite] hash detectado; esperando evento SIGNED_IN", {
+          hashPreview: window.location.hash.slice(0, 80),
+        });
         // Ignoramos la sesión local y dejamos que Supabase resuelva el token de la URL.
         return;
       }
 
       // Solo consideramos válida una sesión si pertenece a una invitación de HR/Admin
       const isValidInviteSession = Boolean(session?.user?.user_metadata?.invited_role);
+
+      console.log("[auth/invite] getSession sin hash", {
+        hasSession: Boolean(session),
+        invitedRole: session?.user?.user_metadata?.invited_role ?? null,
+      });
 
       redirectToOutcome(getInviteAuthOutcome({
         hasSession: isValidInviteSession,
@@ -83,6 +98,12 @@ export default function InviteAuthContent({ nextPath }: InviteAuthContentProps) 
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange(async (_event, session) => {
+      console.log("[auth/invite] onAuthStateChange", {
+        event: _event,
+        hasSession: Boolean(session),
+        invitedRole: session?.user?.user_metadata?.invited_role ?? null,
+      });
+
       const hasHashToken = typeof window !== "undefined" && 
         (window.location.hash.includes("access_token=") || window.location.hash.includes("type=invite"));
       
@@ -108,12 +129,17 @@ export default function InviteAuthContent({ nextPath }: InviteAuthContentProps) 
     });
 
     const fallbackTimer = window.setTimeout(() => {
+      console.error("[auth/invite] timeout esperando sesion de invitacion", {
+        hasHash: Boolean(window.location.hash),
+        hashPreview: window.location.hash.slice(0, 80),
+      });
+
       redirectToOutcome(getInviteAuthOutcome({
         hasSession: false,
         timedOut: true,
         hasErrored: false,
       }));
-    }, 4000);
+    }, 10000);
 
     return () => {
       subscription.unsubscribe();
