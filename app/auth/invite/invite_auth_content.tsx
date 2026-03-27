@@ -60,8 +60,21 @@ export default function InviteAuthContent({ nextPath }: InviteAuthContentProps) 
         data: { session },
       } = await supabase.auth.getSession();
 
+      const hasHashToken = typeof window !== "undefined" && 
+        (window.location.hash.includes("access_token=") || window.location.hash.includes("type=invite"));
+
+      // Sí hay un token en la URL, estamos procesando un nuevo login desde el enlace de invitación.
+      // Debemos ignorar cualquier sesión previa de otra cuenta que pudiera estar activa.
+      if (hasHashToken) {
+        // Ignoramos la sesión local y dejamos que Supabase resuelva el token de la URL.
+        return;
+      }
+
+      // Solo consideramos válida una sesión si pertenece a una invitación de HR/Admin
+      const isValidInviteSession = Boolean(session?.user?.user_metadata?.invited_role);
+
       redirectToOutcome(getInviteAuthOutcome({
-        hasSession: Boolean(session),
+        hasSession: isValidInviteSession,
         timedOut: false,
         hasErrored: false,
       }));
@@ -69,9 +82,18 @@ export default function InviteAuthContent({ nextPath }: InviteAuthContentProps) 
 
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
+    } = supabase.auth.onAuthStateChange(async (_event, session) => {
+      const hasHashToken = typeof window !== "undefined" && 
+        (window.location.hash.includes("access_token=") || window.location.hash.includes("type=invite"));
+      
+      if (hasHashToken && _event !== 'SIGNED_IN') {
+        return; // Esperar a que se procese el hash
+      }
+
+      const isValidInviteSession = Boolean(session?.user?.user_metadata?.invited_role);
+
       redirectToOutcome(getInviteAuthOutcome({
-        hasSession: Boolean(session),
+        hasSession: isValidInviteSession,
         timedOut: false,
         hasErrored: false,
       }));
