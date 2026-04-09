@@ -42,6 +42,6 @@ export default function FaqPage() {
           </div>
         </div>
       </section>
-    </main>
+  </main>
   );
 }
