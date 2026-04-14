@@ -49,7 +49,7 @@ export default function Home() {
           <h2 className="mt-2 text-3xl font-bold">Un recorrido en primera persona</h2>
           <div className="mt-8">
             <VideoSection
-              videoId="8y6n12TkNYU"
+              videoId="H6Bw3KxEaQY"
               posterSrc="/Video_Covers/video_cover2.webp"
               className="mx-auto w-full max-w-4xl"
             />
