@@ -9,6 +9,12 @@ import {
   getApplicationById,
 } from "@/lib/actions/applications";
 import {
+  getCompanies,
+  getLocations,
+  type CompanyData,
+  type LocationData,
+} from "@/lib/actions/config";
+import {
   updateApplicationNotesInList,
   updateApplicationNotesInRecord,
   updateApplicationStatusInList,
@@ -79,6 +85,10 @@ export default function ApplicationsPage() {
   const [error, setError] = useState<string | null>(null);
   const [search, setSearch] = useState("");
   const [status, setStatus] = useState<ApplicationStatus | "all">("all");
+  const [companyId, setCompanyId] = useState("");
+  const [locationId, setLocationId] = useState("");
+  const [companies, setCompanies] = useState<CompanyData[]>([]);
+  const [locations, setLocations] = useState<LocationData[]>([]);
   const [selectedAppSummary, setSelectedAppSummary] = useState<ApplicationData | null>(null);
   const [page, setPage] = useState(1);
   const [total, setTotal] = useState(0);
@@ -95,6 +105,30 @@ export default function ApplicationsPage() {
 
   // ID del perfil del usuario actual (simplificado - debería venir del contexto)
   const currentUserProfileId = "";
+
+  useEffect(() => {
+    let cancelled = false;
+
+    const loadFilterOptions = async () => {
+      const [companiesResult, locationsResult] = await Promise.all([
+        getCompanies(),
+        getLocations(),
+      ]);
+
+      if (cancelled) {
+        return;
+      }
+
+      setCompanies(companiesResult.data || []);
+      setLocations(locationsResult.data || []);
+    };
+
+    void loadFilterOptions();
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   const fetchApplicationDetails = useCallback(async (appId: number) => {
     setIsLoadingDetails(true);
@@ -118,6 +152,8 @@ export default function ApplicationsPage() {
         offset: (page - 1) * PAGE_SIZE,
         status,
         search,
+        companyId: companyId ? Number(companyId) : null,
+        locationId: locationId ? Number(locationId) : null,
       });
 
       if (cancelled) {
@@ -143,7 +179,7 @@ export default function ApplicationsPage() {
     return () => {
       cancelled = true;
     };
-  }, [page, refreshKey, search, status]);
+  }, [companyId, locationId, page, refreshKey, search, status]);
 
   const handleStatusUpdated = useCallback(
     (appId: number, nextStatus: ApplicationStatus, statusChangedAt: string) => {
@@ -206,7 +242,7 @@ export default function ApplicationsPage() {
   return (
     <div className="space-y-6 text-brand-900">
       <section className="rounded-3xl border border-transparent bg-white p-6 shadow-[0_25px_70px_rgba(0,0,0,0.06)]">
-        <div className="grid gap-4 md:grid-cols-4">
+        <div className="grid gap-4 md:grid-cols-6">
           <div className="md:col-span-2">
             <input
               value={search}
@@ -233,6 +269,36 @@ export default function ApplicationsPage() {
               </option>
             ))}
           </select>
+          <select
+            value={companyId}
+            onChange={(e) => {
+              setCompanyId(e.target.value);
+              setPage(1);
+            }}
+            className="rounded-2xl border border-transparent bg-brand-50 px-4 py-2 text-sm text-brand-900 outline-none focus:ring-2 focus:ring-brand-400/40"
+          >
+            <option value="">Todas las empresas</option>
+            {companies.map((company) => (
+              <option key={company.id} value={company.id}>
+                {company.name}
+              </option>
+            ))}
+          </select>
+          <select
+            value={locationId}
+            onChange={(e) => {
+              setLocationId(e.target.value);
+              setPage(1);
+            }}
+            className="rounded-2xl border border-transparent bg-brand-50 px-4 py-2 text-sm text-brand-900 outline-none focus:ring-2 focus:ring-brand-400/40"
+          >
+            <option value="">Todas las ubicaciones</option>
+            {locations.map((location) => (
+              <option key={location.id} value={location.id}>
+                {location.name}
+              </option>
+            ))}
+          </select>
           <button
             onClick={handleRefresh}
             disabled={isRefreshing}
@@ -246,6 +312,8 @@ export default function ApplicationsPage() {
             onClick={() => {
               setSearch("");
               setStatus("all");
+              setCompanyId("");
+              setLocationId("");
               setPage(1);
             }}
             className="rounded-full border border-transparent bg-brand-50 px-4 py-1 shadow-[0_10px_28px_rgba(0,0,0,0.05)]"

@@ -5,7 +5,7 @@ import { createClient } from '@/lib/supabase/server';
 import type { ApplicationStatus } from '@/lib/constants';
 import type { ApplicationNoteData } from '@/lib/application_note_types';
 import { buildNoteTree } from '@/lib/application_notes';
-import { buildApplicationSearchFilter } from '@/lib/application_search';
+import { buildApplicationSearchFilter, buildSearchVariants } from '@/lib/application_search';
 
 export interface ActionResult {
   error?: string;
@@ -104,31 +104,70 @@ type SupabaseClient = NonNullable<Awaited<ReturnType<typeof createClient>>>;
 
 type JobSearchRow = { id: number };
 type CompanySearchRow = { id: number };
+type LocationSearchRow = { id: number };
 
-async function findMatchingApplicationJobIds(supabase: SupabaseClient, search: string) {
-  const trimmedSearch = search.trim();
+async function findMatchingApplicationJobIds(
+  supabase: SupabaseClient,
+  {
+    search,
+    companyId,
+    locationId,
+  }: {
+    search?: string;
+    companyId?: number;
+    locationId?: number;
+  }
+) {
+  const trimmedSearch = (search || '').trim();
 
-  if (!trimmedSearch) {
+  if (!trimmedSearch && !companyId && !locationId) {
     return { jobIds: [] as number[] };
   }
 
-  const term = `%${trimmedSearch}%`;
-  const { data: matchingCompanies, error: companyError } = await supabase
-    .from('company')
-    .select('id')
-    .ilike('name', term);
-
-  if (companyError) {
-    return { jobIds: [] as number[], error: companyError };
-  }
-
-  const companyIds = ((matchingCompanies || []) as CompanySearchRow[]).map((company) => company.id);
   let jobsQuery = supabase.from('job').select('id');
 
-  if (companyIds.length > 0) {
-    jobsQuery = jobsQuery.or(`title.ilike.${term},company.in.(${companyIds.join(',')})`);
-  } else {
-    jobsQuery = jobsQuery.ilike('title', term);
+  if (companyId) {
+    jobsQuery = jobsQuery.eq('company', companyId);
+  }
+
+  if (locationId) {
+    jobsQuery = jobsQuery.eq('location', locationId);
+  }
+
+  if (trimmedSearch) {
+    const searchVariants = buildSearchVariants(trimmedSearch);
+    const textFilters = searchVariants.map((variant) => `title.ilike.%${variant}%`);
+    const companyFilters = searchVariants.map((variant) => `name.ilike.%${variant}%`);
+    const locationFilters = searchVariants.map((variant) => `name.ilike.%${variant}%`);
+
+    const [
+      { data: matchingCompanies, error: companyError },
+      { data: matchingLocations, error: locationError },
+    ] = await Promise.all([
+      supabase.from('company').select('id').or(companyFilters.join(',')),
+      supabase.from('location').select('id').or(locationFilters.join(',')),
+    ]);
+
+    if (companyError) {
+      return { jobIds: [] as number[], error: companyError };
+    }
+
+    if (locationError) {
+      return { jobIds: [] as number[], error: locationError };
+    }
+
+    const companyIds = ((matchingCompanies || []) as CompanySearchRow[]).map((company) => company.id);
+    const locationIds = ((matchingLocations || []) as LocationSearchRow[]).map((location) => location.id);
+
+    if (companyIds.length > 0) {
+      textFilters.push(`company.in.(${companyIds.join(',')})`);
+    }
+
+    if (locationIds.length > 0) {
+      textFilters.push(`location.in.(${locationIds.join(',')})`);
+    }
+
+    jobsQuery = jobsQuery.or(textFilters.join(','));
   }
 
   const { data: matchingJobs, error: jobError } = await jobsQuery;
@@ -186,12 +225,16 @@ export async function getApplications({
   offset = 0,
   status,
   search,
+  companyId,
+  locationId,
   includeDetails = false,
 }: {
   limit?: number;
   offset?: number;
   status?: ApplicationStatus | "all";
   search?: string;
+  companyId?: number | null;
+  locationId?: number | null;
   includeDetails?: boolean;
 } = {}): Promise<{ data: ApplicationData[] | null; total: number; error?: string }> {
   const supabase = await createClient();
@@ -223,8 +266,33 @@ export async function getApplications({
   }
 
   const trimmedSearch = (search || '').trim();
+  const selectedCompanyId = typeof companyId === 'number' && Number.isFinite(companyId) ? companyId : undefined;
+  const selectedLocationId = typeof locationId === 'number' && Number.isFinite(locationId) ? locationId : undefined;
+
+  if (selectedCompanyId || selectedLocationId) {
+    const { jobIds, error } = await findMatchingApplicationJobIds(supabase, {
+      companyId: selectedCompanyId,
+      locationId: selectedLocationId,
+    });
+
+    if (error) {
+      console.error('Error fetching scoped application jobs:', error);
+      return { data: null, total: 0, error: error.message };
+    }
+
+    if (jobIds.length === 0) {
+      return { data: [], total: 0 };
+    }
+
+    query = query.in('job_id', jobIds);
+  }
+
   if (trimmedSearch) {
-    const { jobIds, error } = await findMatchingApplicationJobIds(supabase, trimmedSearch);
+    const { jobIds, error } = await findMatchingApplicationJobIds(supabase, {
+      search: trimmedSearch,
+      companyId: selectedCompanyId,
+      locationId: selectedLocationId,
+    });
 
     if (error) {
       console.error('Error fetching matching application jobs:', error);
