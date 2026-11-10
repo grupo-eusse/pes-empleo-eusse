@@ -2,11 +2,11 @@ import assert from "node:assert/strict";
 import { existsSync, readFileSync } from "node:fs";
 import path from "node:path";
 
-import {
+const {
   TIMELINE_PHOTOS,
   getTimelinePhotosToPreload,
   resetTimelinePhotoPreloadStateForTests,
-} from "../ui/components/about/timeline_assets.ts";
+} = await import(new URL("../ui/components/about/timeline_assets.ts", import.meta.url).href) as typeof import("../ui/components/about/timeline_assets");
 
 const repoRoot = process.cwd();
 

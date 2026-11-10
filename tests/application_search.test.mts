@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 
-import { buildApplicationSearchFilter } from "../lib/application_search.ts";
+const { buildApplicationSearchFilter } = await import(new URL("../lib/application_search.ts", import.meta.url).href) as typeof import("../lib/application_search");
 
 function run() {
   const filterWithJobs = buildApplicationSearchFilter("Lubricentro", [12, 7, 12]);

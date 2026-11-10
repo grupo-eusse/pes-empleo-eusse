@@ -128,7 +128,7 @@ export default function LoginContent({ authError, returnUrl }: LoginContentProps
 
       <aside className="flex w-full max-w-md items-center justify-center rounded-2xl border border-transparent bg-brand-900 p-8 text-brand-50 shadow-[0_35px_90px_rgba(0,0,0,0.2)]">
         <Image
-          src="/logo-eusse-reducido.png"
+          src="/logo-eusse-reducido.webp"
           alt="Logo Eusse"
           width={320}
           height={320}

@@ -2,10 +2,10 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import path from "node:path";
 
-import {
+const {
   buildAdminUserCreatePayload,
   parseAdminUserCreationForm,
-} from "../lib/actions/admin_user_creation.ts";
+} = await import(new URL("../lib/actions/admin_user_creation.ts", import.meta.url).href) as typeof import("../lib/actions/admin_user_creation");
 
 const repoRoot = process.cwd();
 
@@ -45,6 +45,7 @@ function run() {
     }),
   );
 
+  assert.ok("error" in invalidRole);
   assert.equal(invalidRole.error, "El rol debe ser hr o admin");
 
   const invalidPassword = parseAdminUserCreationForm(
@@ -56,7 +57,8 @@ function run() {
     }),
   );
 
-  assert.equal(invalidPassword.error, "La contrasena debe tener al menos 8 caracteres");
+  assert.ok("error" in invalidPassword);
+  assert.equal(invalidPassword.error, "La contraseña debe tener al menos 8 caracteres");
 
   const payload = buildAdminUserCreatePayload({
     fullName: "Laura Campos",
